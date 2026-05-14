@@ -1,8 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, ArrowLeftRight, BarChart2, User, LogOut, Compass } from 'lucide-react'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, ArrowLeftRight, BarChart2, User, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
   { href: '/dashboard',    icon: Home,           label: 'Home' },
@@ -13,52 +13,54 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const signOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth')
+  }
 
   return (
     <aside
       className="fixed left-0 top-0 h-screen w-60 flex flex-col"
       style={{
-        background: 'rgb(var(--bg-surface))',
-        borderRight: '1px solid rgba(var(--border), 0.06)',
+        background: '#F5EFE8',
+        borderRight: '1px solid rgba(0,0,0,0.07)',
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-8">
-        <Compass size={28} color="#5B6EF5" />
-        <span
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 800,
-            fontSize: 20,
-            color: 'rgb(var(--text-1))',
-          }}
-        >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '28px 24px 20px' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 12, background: 'linear-gradient(135deg, #D07850, #C9A830)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 18 }}>💰</span>
+        </div>
+        <span style={{ fontFamily: 'var(--font-urbanist), sans-serif', fontWeight: 800, fontSize: 20, color: '#1A1410' }}>
           SpendWise
         </span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1">
+      <nav style={{ flex: 1, padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = pathname === href
           return (
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 px-4 py-3 rounded-btn transition-all duration-150"
               style={{
-                background: active ? 'rgba(91,110,245,0.12)' : 'transparent',
-                color: active ? '#5B6EF5' : 'rgb(var(--text-2))',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 14px',
+                borderRadius: 14,
+                background: active ? 'rgba(208,120,80,0.12)' : 'transparent',
+                color: active ? '#D07850' : '#65574A',
+                textDecoration: 'none',
+                transition: 'all 150ms ease',
               }}
             >
-              <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
-              <span
-                style={{
-                  fontFamily: 'var(--font-dm)',
-                  fontWeight: active ? 500 : 400,
-                  fontSize: 14,
-                }}
-              >
+              <Icon size={18} strokeWidth={active ? 2.5 : 1.5} color={active ? '#D07850' : '#65574A'} />
+              <span style={{ fontFamily: 'var(--font-urbanist), sans-serif', fontWeight: active ? 600 : 400, fontSize: 14, color: active ? '#D07850' : '#65574A' }}>
                 {label}
               </span>
             </Link>
@@ -67,18 +69,10 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div
-        className="px-6 py-6 space-y-4"
-        style={{ borderTop: '1px solid rgba(var(--border), 0.06)' }}
-      >
-        <ThemeToggle />
+      <div style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
         <button
-          className="flex items-center gap-2 w-full text-left"
-          style={{
-            fontFamily: 'var(--font-dm)',
-            fontSize: 14,
-            color: 'rgb(var(--text-3))',
-          }}
+          onClick={signOut}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-urbanist), sans-serif', fontSize: 14, color: '#A8998A' }}
         >
           <LogOut size={16} />
           Sign out

@@ -1,29 +1,19 @@
 import type { Metadata, Viewport } from 'next'
-import { Syne, DM_Sans } from 'next/font/google'
-import { ThemeProvider } from 'next-themes'
+import { Urbanist } from 'next/font/google'
+import { CurrencyProvider } from '@/lib/currency'
 import './globals.css'
 
-const syne = Syne({
+const urbanist = Urbanist({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-syne',
-})
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-dm',
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-urbanist',
 })
 
 export const metadata: Metadata = {
   title: 'SpendWise — Budget Tracker',
   description: 'Track your expenses, set budgets, and reach your financial goals.',
   manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'SpendWise',
-  },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'SpendWise' },
   icons: {
     apple: [
       { url: '/icons/icon-192.png', sizes: '192x192' },
@@ -33,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#080B14',
+  themeColor: '#EDE4D8',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -42,16 +32,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${syne.variable} ${dmSans.variable} antialiased`}>
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="dark"
-          enableSystem={false}
-          storageKey="spendwise-theme"
-        >
-          {children}
-        </ThemeProvider>
+    <html lang="en" style={{ background: '#EDE4D8' }}>
+      <body
+        className={urbanist.variable}
+        style={{
+          fontFamily: 'var(--font-urbanist), sans-serif',
+          background: '#EDE4D8',
+          minHeight: '100vh',
+        }}
+      >
+        <CurrencyProvider>{children}</CurrencyProvider>
       </body>
     </html>
   )

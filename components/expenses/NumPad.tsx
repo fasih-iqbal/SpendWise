@@ -21,21 +21,22 @@ export function NumPad({ onKey }: Props) {
       {KEYS.map(key => (
         <motion.button
           key={key}
+          type="button"
           onTap={() => handleKey(key)}
-          whileTap={{ scale: 0.96, backgroundColor: 'rgba(91,110,245,0.2)' }}
+          whileTap={{ scale: 0.96, backgroundColor: 'rgba(208,120,80,0.12)' }}
           style={{
             height: 56,
             borderRadius: 16,
-            background: 'rgb(var(--bg-card))',
-            border: '1px solid rgba(var(--border), 0.06)',
+            background: '#fff',
+            border: '1px solid rgba(0,0,0,0.07)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            fontFamily: 'var(--font-syne)',
+            fontFamily: 'var(--font-urbanist), sans-serif',
             fontWeight: 600,
             fontSize: 18,
-            color: key === '⌫' ? 'rgb(var(--danger))' : 'rgb(var(--text-1))',
+            color: key === '⌫' ? '#D07850' : '#1A1410',
             transition: 'background 100ms ease',
           }}
         >

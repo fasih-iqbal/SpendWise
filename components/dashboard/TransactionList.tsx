@@ -1,16 +1,29 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDate } from '@/lib/utils'
+import { useCurrency } from '@/lib/currency'
 import type { Expense, Category } from '@/lib/types'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Props {
   expenses: Expense[]
   categories: Category[]
+  title?: string
+  showViewAll?: boolean
+  onViewAll?: () => void
   onAddExpense?: () => void
+  variant?: 'card' | 'plain'
 }
 
-export function TransactionList({ expenses, categories, onAddExpense }: Props) {
+export function TransactionList({
+  expenses,
+  categories,
+  title = 'Recent Activity',
+  showViewAll = true,
+  onViewAll,
+  onAddExpense,
+  variant = 'card',
+}: Props) {
+  const { format } = useCurrency()
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
 
   if (expenses.length === 0) {
@@ -24,110 +37,88 @@ export function TransactionList({ expenses, categories, onAddExpense }: Props) {
     )
   }
 
+  const wrapper: React.CSSProperties = variant === 'card' ? {
+    margin: '0 20px 20px',
+    background: '#fff',
+    border: '1px solid rgba(0,0,0,0.07)',
+    borderRadius: 22,
+    padding: 18,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+  } : {
+    margin: '0 20px 20px',
+  }
+
   return (
-    <div className="mx-5 mb-5">
-      <p
-        className="mb-4"
-        style={{
-          fontFamily: 'var(--font-syne)',
-          fontWeight: 600,
-          fontSize: 14,
-          color: 'rgb(var(--text-1))',
-        }}
-      >
-        Recent Transactions
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <AnimatePresence>
+    <div style={wrapper}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p style={{ fontWeight: 700, fontSize: 15, color: '#1A1410' }}>{title}</p>
+        {showViewAll && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#D07850',
+              fontSize: 12,
+              fontFamily: 'inherit',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            View All
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <AnimatePresence initial={false}>
           {expenses.map((exp, i) => {
             const cat = catMap[exp.category_id]
+            const label = exp.note ?? cat?.name ?? 'Expense'
+            const dateLabel = new Date(exp.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
             return (
               <motion.div
                 key={exp.id}
-                initial={{ opacity: 0, x: 40 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.3, delay: i * 0.03 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.3, delay: i * 0.04 }}
                 style={{
-                  background: 'rgb(var(--bg-card))',
-                  border: '1px solid rgba(var(--border), 0.06)',
-                  borderRadius: 18,
-                  padding: '14px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
+                  padding: '10px 0',
+                  borderBottom: i < expenses.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
                 }}
               >
-                {/* Category icon */}
                 <div
                   style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 14,
-                    background: cat ? `${cat.color}1A` : 'rgba(91,110,245,0.1)',
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    background: cat?.color ?? '#D07850',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 20,
                     flexShrink: 0,
+                    fontSize: 16,
                   }}
                 >
-                  {cat?.emoji ?? '💸'}
+                  <span style={{ fontSize: 16 }}>{cat?.emoji ?? '💸'}</span>
                 </div>
 
-                {/* Details */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-syne)',
-                      fontWeight: 600,
-                      fontSize: 14,
-                      color: 'rgb(var(--text-1))',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {exp.note ?? cat?.name ?? 'Expense'}
+                  <p style={{ fontWeight: 600, fontSize: 14, color: '#1A1410', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {label}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-dm)',
-                        fontSize: 11,
-                        color: 'rgb(var(--text-3))',
-                      }}
-                    >
-                      {formatDate(exp.date)}
-                    </span>
-                    {cat && (
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-dm)',
-                          fontSize: 10,
-                          color: cat.color,
-                          background: `${cat.color}1A`,
-                          borderRadius: 999,
-                          padding: '2px 8px',
-                        }}
-                      >
-                        {cat.name}
-                      </span>
-                    )}
-                  </div>
+                  <p style={{ fontSize: 11, color: '#A8998A', marginTop: 1 }}>
+                    {dateLabel}
+                  </p>
                 </div>
 
-                {/* Amount */}
-                <p
-                  style={{
-                    fontFamily: 'var(--font-syne)',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    color: 'rgb(var(--text-1))',
-                    flexShrink: 0,
-                  }}
-                >
-                  -${exp.amount.toFixed(2)}
+                <p style={{ fontWeight: 700, fontSize: 14, color: '#1A1410', flexShrink: 0 }}>
+                  {format(exp.amount, { decimals: 2 })}
                 </p>
               </motion.div>
             )
@@ -137,3 +128,4 @@ export function TransactionList({ expenses, categories, onAddExpense }: Props) {
     </div>
   )
 }
+

@@ -1,121 +1,106 @@
 'use client'
 import { motion } from 'framer-motion'
 import { CountUp } from '@/components/ui/CountUp'
-import { ProgressRing } from '@/components/ui/ProgressRing'
-import type { DashboardStats } from '@/lib/types'
+import { useCurrency } from '@/lib/currency'
 
 interface Props {
-  stats: DashboardStats
-  month: string
+  availableCredit: number
+  cardLastFour: string
+  cardHolder: string
+  validThru: string
 }
 
-export function ExpenseHeroCard({ stats, month }: Props) {
+export function ExpenseHeroCard({ availableCredit, cardLastFour, cardHolder, validThru }: Props) {
+  const { currency } = useCurrency()
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="mx-5 mb-5 relative overflow-hidden"
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        borderRadius: 28,
-        background: 'linear-gradient(145deg, #131d35 0%, #0f1525 60%, #0a0f1e 100%)',
-        border: '1px solid rgba(91,110,245,0.2)',
-        boxShadow: '0 0 0 1px rgba(255,255,255,0.03), 0 20px 60px rgba(0,0,0,0.5)',
-        padding: 24,
+        margin: '0 20px 20px',
+        borderRadius: 24,
+        background: 'linear-gradient(155deg, #1F1A17 0%, #0E0B09 100%)',
+        padding: 22,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 12px 36px rgba(0,0,0,0.28)',
       }}
     >
-      {/* Ambient glow */}
+      {/* Soft corner glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 85% 15%, rgba(91,110,245,0.2) 0%, transparent 55%)',
+          position: 'absolute',
+          top: -60,
+          right: -60,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(208,120,80,0.18) 0%, transparent 70%)',
+          pointerEvents: 'none',
         }}
       />
 
-      {/* Bottom gradient border */}
-      <div
-        className="absolute bottom-0 left-0 right-0"
-        style={{
-          height: 2,
-          background: 'linear-gradient(90deg, #5B6EF5, #2DD4BF)',
-        }}
-      />
-
-      {/* Header */}
-      <div className="flex justify-between items-start mb-5 relative">
-        <span
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 600,
-            fontSize: 10,
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            color: 'rgb(var(--text-3))',
-          }}
-        >
-          Monthly Budget
-        </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 600,
-            fontSize: 11,
-            color: '#5B6EF5',
-            background: 'rgba(91,110,245,0.15)',
-            border: '1px solid rgba(91,110,245,0.35)',
-            borderRadius: 999,
-            padding: '4px 12px',
-          }}
-        >
-          {month}
-        </span>
+      {/* Top row: label + contactless icon */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+          Available Credit
+        </p>
+        {/* Contactless symbol */}
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M5 8a10 10 0 0 1 0 8" stroke="rgba(255,255,255,0.4)" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M9 6a14 14 0 0 1 0 12" stroke="rgba(255,255,255,0.4)" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M13 4a18 18 0 0 1 0 16" stroke="rgba(255,255,255,0.4)" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
       </div>
 
-      {/* Body */}
-      <div className="flex items-center gap-6 relative">
-        <ProgressRing percentage={stats.percentUsed} size={110} strokeWidth={10} />
+      {/* Amount */}
+      <p
+        style={{
+          fontSize: 34,
+          fontWeight: 700,
+          color: '#fff',
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          marginBottom: 18,
+        }}
+      >
+        {currency.symbol}<CountUp to={availableCredit} decimals={0} />
+      </p>
 
-        <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Total Budget */}
-          <div>
-            <p style={{ fontFamily: 'var(--font-dm)', fontSize: 11, color: 'rgb(var(--text-3))', marginBottom: 2 }}>
-              Total Budget
-            </p>
-            <p style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 20, color: 'rgb(var(--text-1))' }}>
-              $<CountUp to={stats.totalBudget} />
-              <span style={{ fontFamily: 'var(--font-dm)', fontWeight: 400, fontSize: 12, color: 'rgb(var(--text-3))' }}>
-                {' '}/ mo
-              </span>
-            </p>
-          </div>
+      {/* Card number */}
+      <p
+        style={{
+          fontSize: 15,
+          color: 'rgba(255,255,255,0.85)',
+          letterSpacing: '0.18em',
+          fontFamily: '"SF Mono", Consolas, monospace',
+          marginBottom: 22,
+          fontWeight: 500,
+        }}
+      >
+        ∗∗∗∗ &nbsp;∗∗∗∗ &nbsp;∗∗∗∗ &nbsp;{cardLastFour}
+      </p>
 
-          {/* Spent */}
-          <div>
-            <p style={{ fontFamily: 'var(--font-dm)', fontSize: 11, color: 'rgb(var(--text-3))', marginBottom: 2 }}>
-              Spent
-            </p>
-            <p style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 20, color: 'rgb(var(--text-1))', marginBottom: 6 }}>
-              $<CountUp to={stats.totalSpent} />
-            </p>
-            <div style={{ height: 4, borderRadius: 999, overflow: 'hidden', background: 'rgba(42,51,80,1)' }}>
-              <motion.div
-                style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #5B6EF5, #2DD4BF)' }}
-                initial={{ width: 0 }}
-                animate={{ width: `${stats.percentUsed}%` }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-              />
-            </div>
-          </div>
-
-          {/* Remaining */}
-          <div>
-            <p style={{ fontFamily: 'var(--font-dm)', fontSize: 11, color: 'rgb(var(--text-3))', marginBottom: 2 }}>
-              Remaining
-            </p>
-            <p style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 20, color: '#34D399' }}>
-              $<CountUp to={stats.totalRemaining} />
-            </p>
-          </div>
+      {/* Bottom: holder, valid thru, brand */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 3 }}>
+            Card Holder
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{cardHolder}</p>
+        </div>
+        <div>
+          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 3 }}>
+            Valid Thru
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{validThru}</p>
+        </div>
+        {/* Brand: two overlapping circles */}
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#D07850' }} />
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#2C6A49', marginLeft: -8, opacity: 0.95 }} />
         </div>
       </div>
     </motion.div>

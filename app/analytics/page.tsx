@@ -1,30 +1,28 @@
 import { AppShell } from '@/components/layout/AppShell'
-import { Header } from '@/components/layout/Header'
+import { AnalyticsHeader } from '@/components/analytics/AnalyticsHeader'
 import { DonutChart } from '@/components/analytics/DonutChart'
-import { MonthComparison } from '@/components/analytics/MonthComparison'
-import { GoalsCard } from '@/components/analytics/GoalsCard'
-import { MOCK_EXPENSES, MOCK_CATEGORIES, MOCK_MONTHLY, MOCK_GOALS } from '@/lib/mock-data'
+import { ExploreFeatures } from '@/components/analytics/ExploreFeatures'
+import { SpendingGoalScroll } from '@/components/analytics/SpendingGoalScroll'
+import {
+  MOCK_DASHBOARD,
+  MOCK_FEATURES,
+  MOCK_SPENDING_CATEGORIES,
+} from '@/lib/mock-data'
 
 export default function AnalyticsPage() {
   return (
     <AppShell>
-      <Header userName="Alex" />
-      <div style={{ paddingTop: 8 }}>
-        <h2
-          className="px-5 mb-4"
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 700,
-            fontSize: 22,
-            color: 'rgb(var(--text-1))',
-          }}
-        >
-          Analytics
-        </h2>
-        <DonutChart expenses={MOCK_EXPENSES} categories={MOCK_CATEGORIES} />
-        <MonthComparison data={MOCK_MONTHLY} />
-        <GoalsCard goals={MOCK_GOALS} />
-      </div>
+      <AnalyticsHeader title="Analytics" />
+      <DonutChart
+        onlineSpend={MOCK_DASHBOARD.onlineSpent}
+        offlineSpend={MOCK_DASHBOARD.offlineSpent}
+        availableLimit={MOCK_DASHBOARD.availableLimit}
+        changePct={MOCK_DASHBOARD.monthChangePct}
+        title="My Expenses"
+        period="This month"
+      />
+      <ExploreFeatures features={MOCK_FEATURES} />
+      <SpendingGoalScroll categories={MOCK_SPENDING_CATEGORIES} />
     </AppShell>
   )
 }

@@ -3,7 +3,7 @@ import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Compass, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 
 function AuthForm() {
   const searchParams = useSearchParams()
@@ -31,145 +31,121 @@ function AuthForm() {
         if (error) throw error
         router.push('/setup')
       }
-    } catch (err: any) {
-      setError(err.message ?? 'Something went wrong')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
   }
 
-  const inputStyle = {
+  const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '14px 16px',
     borderRadius: 14,
-    background: 'rgb(var(--bg-card))',
-    border: '1px solid rgba(var(--border), 0.08)',
-    fontFamily: 'var(--font-dm)',
+    background: '#fff',
+    border: '1px solid rgba(0,0,0,0.08)',
+    fontFamily: 'var(--font-urbanist), sans-serif',
     fontSize: 15,
-    color: 'rgb(var(--text-1))',
+    color: '#1A1410',
     outline: 'none',
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: 'rgb(var(--bg-primary))' }}
-    >
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: '#EDE4D8', fontFamily: 'var(--font-urbanist), sans-serif' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         style={{ width: '100%', maxWidth: 380 }}
       >
+        {/* Logo mark */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-          <Compass size={32} color="#5B6EF5" />
+          <div style={{ width: 56, height: 56, borderRadius: 18, background: 'linear-gradient(135deg, #D07850, #C9A830)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(208,120,80,0.3)' }}>
+            <span style={{ fontSize: 26 }}>💰</span>
+          </div>
         </div>
-        <h1
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 800,
-            fontSize: 26,
-            color: 'rgb(var(--text-1))',
-            textAlign: 'center',
-            marginBottom: 6,
-          }}
-        >
-          {isSignIn ? 'Welcome back' : 'Create account'}
-        </h1>
-        <p
-          style={{
-            fontFamily: 'var(--font-dm)',
-            fontSize: 14,
-            color: 'rgb(var(--text-3))',
-            textAlign: 'center',
-            marginBottom: 32,
-          }}
-        >
-          {isSignIn ? 'Sign in to your SpendWise account' : 'Start tracking your finances today'}
-        </p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={inputStyle}
-          />
-          <div style={{ position: 'relative' }}>
+        {/* Card */}
+        <div style={{ background: '#fff', borderRadius: 24, padding: 28, boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <h1 style={{ fontWeight: 800, fontSize: 24, color: '#1A1410', textAlign: 'center', marginBottom: 6 }}>
+            {isSignIn ? 'Welcome back' : 'Create account'}
+          </h1>
+          <p style={{ fontSize: 14, color: '#A8998A', textAlign: 'center', marginBottom: 28 }}>
+            {isSignIn ? 'Sign in to your SpendWise account' : 'Start tracking your finances today'}
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input
-              type={showPw ? 'text' : 'password'}
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
-              style={{ ...inputStyle, paddingRight: 48 }}
+              style={inputStyle}
             />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPw ? 'text' : 'password'}
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingRight: 48 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(!showPw)}
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#A8998A' }}
+              >
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{ fontSize: 12, color: '#D07850', paddingLeft: 4 }}
+              >
+                {error}
+              </motion.p>
+            )}
+
             <button
-              type="button"
-              onClick={() => setShowPw(!showPw)}
+              type="submit"
+              disabled={loading}
               style={{
-                position: 'absolute',
-                right: 14,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
+                marginTop: 8,
+                padding: '16px',
+                borderRadius: 14,
+                background: loading ? '#E0D5C9' : '#D07850',
+                color: '#fff',
+                fontFamily: 'var(--font-urbanist), sans-serif',
+                fontWeight: 700,
+                fontSize: 16,
                 border: 'none',
-                cursor: 'pointer',
-                color: 'rgb(var(--text-3))',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'background 200ms ease',
               }}
             >
-              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              {loading ? 'Loading...' : isSignIn ? 'Sign In' : 'Create Account'}
             </button>
-          </div>
+          </form>
 
-          {error && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{ fontFamily: 'var(--font-dm)', fontSize: 12, color: 'rgb(var(--danger))', paddingLeft: 4 }}
+          <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#A8998A' }}>
+            {isSignIn ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              onClick={() => setIsSignIn(!isSignIn)}
+              style={{ color: '#D07850', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-urbanist), sans-serif', fontSize: 14, fontWeight: 600 }}
             >
-              {error}
-            </motion.p>
-          )}
+              {isSignIn ? 'Sign up' : 'Sign in'}
+            </button>
+          </p>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              marginTop: 8,
-              padding: '16px',
-              borderRadius: 18,
-              background: loading ? 'rgba(var(--dim))' : 'linear-gradient(135deg, #5B6EF5, #2DD4BF)',
-              color: '#fff',
-              fontFamily: 'var(--font-syne)',
-              fontWeight: 700,
-              fontSize: 16,
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {loading ? 'Loading...' : isSignIn ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
-
-        <p
-          style={{
-            textAlign: 'center',
-            marginTop: 20,
-            fontFamily: 'var(--font-dm)',
-            fontSize: 14,
-            color: 'rgb(var(--text-3))',
-          }}
-        >
-          {isSignIn ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            onClick={() => setIsSignIn(!isSignIn)}
-            style={{ color: '#5B6EF5', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-dm)', fontSize: 14 }}
-          >
-            {isSignIn ? 'Sign up' : 'Sign in'}
-          </button>
+        {/* Dev link */}
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: '#A8998A' }}>
+          <a href="/dashboard" style={{ color: '#D07850', textDecoration: 'none' }}>Preview Dashboard →</a>
         </p>
       </motion.div>
     </div>

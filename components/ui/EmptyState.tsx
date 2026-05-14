@@ -7,45 +7,47 @@ interface Props {
 
 export function EmptyState({ icon, title, subtitle, action }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <span style={{ fontSize: 56 }}>{icon}</span>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 32px',
+        textAlign: 'center',
+      }}
+    >
+      <span style={{ fontSize: 52 }}>{icon}</span>
       <h3
         style={{
-          fontFamily: 'var(--font-syne)',
           fontWeight: 700,
-          fontSize: 18,
-          color: 'rgb(var(--text-1))',
-          marginTop: 16,
-          marginBottom: 8,
+          fontSize: 17,
+          color: '#1A1410',
+          marginTop: 14,
+          marginBottom: 6,
         }}
       >
         {title}
       </h3>
-      <p
-        style={{
-          fontFamily: 'var(--font-dm)',
-          fontSize: 14,
-          color: 'rgb(var(--text-3))',
-          maxWidth: 260,
-          lineHeight: 1.5,
-        }}
-      >
+      <p style={{ fontSize: 13, color: '#A8998A', maxWidth: 260, lineHeight: 1.5 }}>
         {subtitle}
       </p>
       {action && (
         <button
+          type="button"
           onClick={action.onClick}
           style={{
-            marginTop: 20,
-            padding: '10px 24px',
-            borderRadius: 16,
-            background: 'linear-gradient(135deg, #5B6EF5, #2DD4BF)',
+            marginTop: 18,
+            padding: '12px 28px',
+            borderRadius: 14,
+            background: '#D07850',
             color: '#fff',
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 600,
+            fontFamily: 'inherit',
+            fontWeight: 700,
             fontSize: 14,
             border: 'none',
             cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(208,120,80,0.3)',
           }}
         >
           {action.label}

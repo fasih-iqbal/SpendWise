@@ -1,121 +1,170 @@
 'use client'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { Compass } from 'lucide-react'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { ChevronsRight } from 'lucide-react'
+import { SketchGrid } from '@/components/onboarding/SketchGrid'
+import { CurrencyPicker } from '@/components/ui/CurrencyPicker'
+
+const SCREENS = [
+  {
+    title: 'Manage your\nExpenses Easily',
+    subtitle:
+      'Get a full view so you know where to save. Track spending, detect fraud, and keep tabs on rising subscription costs.',
+  },
+  {
+    title: 'Plan Smarter\nLive Better',
+    subtitle:
+      'Set goals, monitor categories, and watch your savings grow month over month with intelligent insights.',
+  },
+  {
+    title: 'Pick Your\nCurrency',
+    subtitle:
+      'Choose the currency you spend in every day. You can change it anytime from your profile settings.',
+  },
+]
 
 export default function OnboardingPage() {
+  const [screen, setScreen] = useState(0)
+  const router = useRouter()
+
+  const next = () => {
+    if (screen < SCREENS.length - 1) setScreen(s => s + 1)
+    else router.push('/auth')
+  }
+
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-8 text-center"
-      style={{ background: 'rgb(var(--bg-primary))' }}
+      style={{
+        minHeight: '100vh',
+        background: '#EDE4D8',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'var(--font-urbanist), sans-serif',
+        maxWidth: 430,
+        margin: '0 auto',
+        padding: '0 20px',
+      }}
     >
-      {/* Ambient glow */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(91,110,245,0.15) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Skip */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 18 }}>
+        <button
+          type="button"
+          onClick={() => router.push('/auth')}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: 13,
+            color: '#A8998A',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            padding: 8,
+          }}
+        >
+          Skip
+        </button>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={{ maxWidth: 320 }}
-      >
-        {/* Logo */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+      {/* Sketch panel */}
+      <div style={{ paddingTop: 12 }}>
+        <SketchGrid />
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={screen}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.3 }}
+          style={{ marginTop: 30, flex: 1, display: 'flex', flexDirection: 'column' }}
+        >
+          <h1
+            style={{
+              fontSize: 30,
+              fontWeight: 800,
+              color: '#1A1410',
+              lineHeight: 1.15,
+              marginBottom: 12,
+              whiteSpace: 'pre-line',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {SCREENS[screen].title}
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              color: '#65574A',
+              lineHeight: 1.55,
+              maxWidth: 340,
+            }}
+          >
+            {SCREENS[screen].subtitle}
+          </p>
+
+          {screen === 2 && (
+            <div style={{ marginTop: 18 }}>
+              <CurrencyPicker variant="full" align="left" />
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Dots */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 16 }}>
+        {SCREENS.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: i === screen ? 22 : 6,
+              height: 6,
+              borderRadius: 3,
+              background: i === screen ? '#D07850' : 'rgba(0,0,0,0.15)',
+              transition: 'all 300ms',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Swipe button */}
+      <div style={{ paddingBottom: 40 }}>
+        <motion.button
+          type="button"
+          onClick={next}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            background: '#fff',
+            border: 'none',
+            borderRadius: 999,
+            padding: '6px 24px 6px 6px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+          }}
+        >
           <div
             style={{
-              width: 80,
-              height: 80,
-              borderRadius: 24,
-              background: 'linear-gradient(135deg, #5B6EF5, #2DD4BF)',
+              width: 50,
+              height: 50,
+              borderRadius: '50%',
+              background: '#1A1410',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(91,110,245,0.4)',
+              flexShrink: 0,
             }}
           >
-            <Compass size={40} color="#fff" />
+            <ChevronsRight size={22} color="#fff" strokeWidth={2.5} />
           </div>
-        </div>
-
-        <h1
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 800,
-            fontSize: 36,
-            color: 'rgb(var(--text-1))',
-            marginBottom: 12,
-            lineHeight: 1.1,
-          }}
-        >
-          SpendWise
-        </h1>
-        <p
-          style={{
-            fontFamily: 'var(--font-dm)',
-            fontSize: 16,
-            color: 'rgb(var(--text-3))',
-            marginBottom: 48,
-            lineHeight: 1.6,
-          }}
-        >
-          Track your expenses, set budgets, and reach your financial goals — beautifully.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Link
-            href="/auth"
-            style={{
-              display: 'block',
-              padding: '16px 32px',
-              borderRadius: 18,
-              background: 'linear-gradient(135deg, #5B6EF5, #2DD4BF)',
-              color: '#fff',
-              fontFamily: 'var(--font-syne)',
-              fontWeight: 700,
-              fontSize: 16,
-              textDecoration: 'none',
-              boxShadow: '0 8px 24px rgba(91,110,245,0.4)',
-            }}
-          >
-            Get Started
-          </Link>
-          <Link
-            href="/auth?mode=signin"
-            style={{
-              display: 'block',
-              padding: '16px 32px',
-              borderRadius: 18,
-              background: 'rgba(var(--bg-card))',
-              color: 'rgb(var(--text-2))',
-              fontFamily: 'var(--font-syne)',
-              fontWeight: 600,
-              fontSize: 16,
-              textDecoration: 'none',
-              border: '1px solid rgba(var(--border), 0.08)',
-            }}
-          >
-            Sign In
-          </Link>
-        </div>
-
-        {/* Preview dashboard link for development */}
-        <p style={{ marginTop: 24, fontFamily: 'var(--font-dm)', fontSize: 12, color: 'rgb(var(--text-3))' }}>
-          <Link href="/dashboard" style={{ color: '#5B6EF5', textDecoration: 'none' }}>
-            Preview Dashboard →
-          </Link>
-        </p>
-      </motion.div>
+          <span style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#1A1410' }}>
+            {screen === SCREENS.length - 1 ? 'Get Started' : 'Swipe to get started'}
+          </span>
+        </motion.button>
+      </div>
     </div>
   )
 }

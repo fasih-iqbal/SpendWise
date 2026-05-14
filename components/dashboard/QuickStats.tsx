@@ -8,6 +8,7 @@ interface Stat {
   label: string
   value: number
   prefix?: string
+  suffix?: string
 }
 
 interface Props {
@@ -18,13 +19,13 @@ interface Props {
 
 export function QuickStats({ income, saved, percentUsed }: Props) {
   const stats: Stat[] = [
-    { emoji: '💰', color: '#34D399', label: 'Income',  value: income,      prefix: '$' },
-    { emoji: '🏦', color: '#5B6EF5', label: 'Saved',   value: saved,       prefix: '$' },
-    { emoji: '📊', color: '#F472B6', label: 'Used',     value: percentUsed, prefix: '' },
+    { emoji: '💰', color: '#2C6A49', label: 'Income',  value: income,      prefix: '$' },
+    { emoji: '🏦', color: '#C9A830', label: 'Saved',   value: saved,       prefix: '$' },
+    { emoji: '📊', color: '#D07850', label: 'Used',    value: percentUsed, suffix: '%' },
   ]
 
   return (
-    <div className="mx-5 mb-5 grid grid-cols-3 gap-3">
+    <div style={{ margin: '0 20px 16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
       {stats.map((stat, i) => (
         <motion.div
           key={stat.label}
@@ -32,61 +33,27 @@ export function QuickStats({ income, saved, percentUsed }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: i * 0.1 }}
           style={{
-            background: 'rgb(var(--bg-card))',
-            border: '1px solid rgba(var(--border), 0.06)',
+            background: '#fff',
+            border: '1px solid rgba(0,0,0,0.07)',
             borderRadius: 20,
             padding: '14px 12px',
             position: 'relative',
             overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
           }}
         >
           {/* Accent bottom line */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 2,
-              background: stat.color,
-            }}
-          />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: stat.color }} />
 
           {/* Icon circle */}
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: '50%',
-              background: `${stat.color}26`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 14,
-              marginBottom: 8,
-            }}
-          >
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${stat.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, marginBottom: 8 }}>
             {stat.emoji}
           </div>
 
-          <p
-            style={{
-              fontFamily: 'var(--font-syne)',
-              fontWeight: 700,
-              fontSize: 15,
-              color: 'rgb(var(--text-1))',
-              marginBottom: 2,
-            }}
-          >
-            {stat.prefix}<CountUp to={stat.value} />{stat.label === 'Used' ? '%' : ''}
+          <p style={{ fontWeight: 700, fontSize: 15, color: '#1A1410', marginBottom: 2 }}>
+            {stat.prefix}<CountUp to={stat.value} />{stat.suffix ?? ''}
           </p>
-          <p
-            style={{
-              fontFamily: 'var(--font-dm)',
-              fontSize: 10,
-              color: 'rgb(var(--text-3))',
-            }}
-          >
+          <p style={{ fontSize: 10, color: '#A8998A' }}>
             {stat.label}
           </p>
         </motion.div>

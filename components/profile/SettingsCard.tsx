@@ -16,31 +16,32 @@ interface Props {
 
 export function SettingsCard({ title, items }: Props) {
   return (
-    <div className="mx-5 mb-4">
+    <div style={{ margin: '0 20px 16px' }}>
       <p
-        className="mb-2 px-1"
         style={{
-          fontFamily: 'var(--font-syne)',
+          padding: '0 4px 8px',
           fontWeight: 600,
           fontSize: 12,
-          letterSpacing: '0.08em',
+          letterSpacing: '0.06em',
           textTransform: 'uppercase',
-          color: 'rgb(var(--text-3))',
+          color: '#65574A',
         }}
       >
         {title}
       </p>
       <div
         style={{
-          background: 'rgb(var(--bg-card))',
-          border: '1px solid rgba(var(--border), 0.06)',
-          borderRadius: 20,
+          background: '#fff',
+          border: '1px solid rgba(0,0,0,0.07)',
+          borderRadius: 18,
           overflow: 'hidden',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
         }}
       >
         {items.map((item, i) => (
           <button
             key={item.label}
+            type="button"
             onClick={item.onClick}
             style={{
               width: '100%',
@@ -50,30 +51,28 @@ export function SettingsCard({ title, items }: Props) {
               padding: '14px 16px',
               background: 'none',
               border: 'none',
-              borderTop: i > 0 ? '1px solid rgba(var(--border), 0.06)' : 'none',
+              borderTop: i > 0 ? '1px solid rgba(0,0,0,0.05)' : 'none',
               cursor: item.onClick ? 'pointer' : 'default',
               textAlign: 'left',
+              fontFamily: 'inherit',
+              transition: 'background 120ms',
             }}
           >
             <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
             <span
               style={{
-                fontFamily: 'var(--font-dm)',
                 fontSize: 14,
-                color: item.danger ? 'rgb(var(--danger))' : 'rgb(var(--text-1))',
+                color: item.danger ? '#D03C3C' : '#1A1410',
                 flex: 1,
+                fontWeight: 500,
               }}
             >
               {item.label}
             </span>
             {item.value && (
-              <span style={{ fontFamily: 'var(--font-dm)', fontSize: 13, color: 'rgb(var(--text-3))' }}>
-                {item.value}
-              </span>
+              <span style={{ fontSize: 13, color: '#A8998A' }}>{item.value}</span>
             )}
-            {item.onClick && (
-              <ChevronRight size={16} color="rgb(var(--text-3))" />
-            )}
+            {item.onClick && <ChevronRight size={16} color="#A8998A" />}
           </button>
         ))}
       </div>

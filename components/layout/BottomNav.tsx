@@ -5,10 +5,10 @@ import { Home, ArrowLeftRight, BarChart2, User, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const NAV_ITEMS = [
-  { href: '/dashboard',     icon: Home,            label: 'Home' },
-  { href: '/transactions',  icon: ArrowLeftRight,  label: 'Transactions' },
-  { href: '/analytics',     icon: BarChart2,       label: 'Analytics' },
-  { href: '/profile',       icon: User,            label: 'Profile' },
+  { href: '/dashboard',    icon: Home,           label: 'Home' },
+  { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
+  { href: '/analytics',    icon: BarChart2,      label: 'Analytics' },
+  { href: '/profile',      icon: User,           label: 'Profile' },
 ]
 
 interface Props {
@@ -22,9 +22,11 @@ export function BottomNav({ onAddExpense }: Props) {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around"
       style={{
-        background: 'rgba(14,18,32,0.95)',
-        backdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: '#fff',
+        borderTop: '1px solid rgba(0,0,0,0.07)',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
         paddingBottom: 'env(safe-area-inset-bottom)',
         height: 72,
       }}
@@ -43,8 +45,8 @@ export function BottomNav({ onAddExpense }: Props) {
           width: 52,
           height: 52,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #5B6EF5, #2DD4BF)',
-          boxShadow: '0 8px 24px rgba(91,110,245,0.5)',
+          background: '#D07850',
+          boxShadow: '0 8px 24px rgba(208,120,80,0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -78,20 +80,18 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-1 px-4 py-2"
-      style={{ minWidth: 56 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 16px', minWidth: 56, textDecoration: 'none' }}
     >
       <Icon
         size={20}
-        color={active ? '#5B6EF5' : 'rgb(var(--text-3))'}
+        color={active ? '#D07850' : '#A8998A'}
         strokeWidth={active ? 2.5 : 1.5}
       />
       <span
         style={{
-          fontFamily: 'var(--font-dm)',
           fontSize: 10,
-          color: active ? '#5B6EF5' : 'rgb(var(--text-3))',
-          fontWeight: active ? 500 : 400,
+          color: active ? '#D07850' : '#A8998A',
+          fontWeight: active ? 600 : 400,
         }}
       >
         {label}

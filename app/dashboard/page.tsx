@@ -1,38 +1,35 @@
 import { AppShell } from '@/components/layout/AppShell'
 import { Header } from '@/components/layout/Header'
 import { ExpenseHeroCard } from '@/components/dashboard/ExpenseHeroCard'
-import { QuickStats } from '@/components/dashboard/QuickStats'
-import { InsightBanner } from '@/components/dashboard/InsightBanner'
-import { CategoryScroll } from '@/components/dashboard/CategoryScroll'
 import { WeeklyChart } from '@/components/dashboard/WeeklyChart'
 import { TransactionList } from '@/components/dashboard/TransactionList'
 import {
-  MOCK_DASHBOARD,
-  MOCK_CATEGORIES,
-  MOCK_EXPENSES,
+  MOCK_USER,
   MOCK_WEEKLY,
+  MOCK_EXPENSES,
+  MOCK_CATEGORIES,
 } from '@/lib/mock-data'
-import { MONTHS } from '@/lib/constants'
 
 export default function DashboardPage() {
-  const now = new Date()
-  const month = `${MONTHS[now.getMonth()]} ${now.getFullYear()}`
+  const recent = [...MOCK_EXPENSES]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 4)
 
   return (
     <AppShell>
-      <Header userName="Alex" />
-      <ExpenseHeroCard stats={MOCK_DASHBOARD} month={month} />
-      <QuickStats
-        income={MOCK_DASHBOARD.income}
-        saved={MOCK_DASHBOARD.saved}
-        percentUsed={MOCK_DASHBOARD.percentUsed}
+      <Header userName={MOCK_USER.name} />
+      <ExpenseHeroCard
+        availableCredit={MOCK_USER.available_credit}
+        cardLastFour={MOCK_USER.card_last_four}
+        cardHolder={MOCK_USER.card_holder}
+        validThru={MOCK_USER.valid_thru}
       />
-      <InsightBanner />
-      <CategoryScroll categories={MOCK_CATEGORIES} />
       <WeeklyChart data={MOCK_WEEKLY} />
       <TransactionList
-        expenses={MOCK_EXPENSES}
+        expenses={recent}
         categories={MOCK_CATEGORIES}
+        title="Recent Activity"
+        showViewAll
       />
     </AppShell>
   )

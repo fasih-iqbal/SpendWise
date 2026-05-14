@@ -10,24 +10,16 @@ interface Props {
 export function CategoryPicker({ categories, selected, onSelect }: Props) {
   return (
     <div>
-      <p
-        style={{
-          fontFamily: 'var(--font-syne)',
-          fontWeight: 600,
-          fontSize: 13,
-          color: 'rgb(var(--text-2))',
-          marginBottom: 12,
-          paddingLeft: 4,
-        }}
-      >
+      <p style={{ fontWeight: 600, fontSize: 13, color: '#65574A', marginBottom: 12, paddingLeft: 4 }}>
         Category
       </p>
-      <div className="flex gap-3 overflow-x-auto scrollbar-none" style={{ paddingBottom: 4 }}>
+      <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {categories.map(cat => {
           const isSelected = selected === cat.id
           return (
             <button
               key={cat.id}
+              type="button"
               onClick={() => onSelect(cat.id)}
               style={{
                 flexShrink: 0,
@@ -47,9 +39,9 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
                   width: 48,
                   height: 48,
                   borderRadius: '50%',
-                  background: isSelected ? `${cat.color}26` : 'rgb(var(--bg-card))',
-                  border: isSelected ? `2px solid ${cat.color}` : '2px solid rgba(var(--border), 0.08)',
-                  boxShadow: isSelected ? `0 0 12px ${cat.color}50` : 'none',
+                  background: isSelected ? `${cat.color}22` : '#fff',
+                  border: isSelected ? `2px solid ${cat.color}` : '2px solid rgba(0,0,0,0.08)',
+                  boxShadow: isSelected ? `0 0 12px ${cat.color}40` : 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -59,14 +51,7 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
               >
                 {cat.emoji}
               </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-dm)',
-                  fontSize: 10,
-                  color: isSelected ? cat.color : 'rgb(var(--text-3))',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <span style={{ fontSize: 10, color: isSelected ? cat.color : '#A8998A', whiteSpace: 'nowrap', fontWeight: isSelected ? 600 : 400 }}>
                 {cat.name}
               </span>
             </button>

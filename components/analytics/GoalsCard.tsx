@@ -20,18 +20,16 @@ export function GoalsCard({ goals }: Props) {
 
   return (
     <div
-      className="mx-5 mb-5"
       style={{
-        background: 'linear-gradient(145deg, rgba(251,191,36,0.08) 0%, rgba(26,32,53,1) 100%)',
-        border: '1px solid rgba(251,191,36,0.15)',
+        margin: '0 20px 20px',
+        background: '#fff',
+        border: '1px solid rgba(201,168,48,0.2)',
         borderRadius: 24,
         padding: 20,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}
     >
-      <p
-        className="mb-4"
-        style={{ fontFamily: 'var(--font-syne)', fontWeight: 600, fontSize: 14, color: 'rgb(var(--text-1))' }}
-      >
+      <p style={{ fontWeight: 600, fontSize: 14, color: '#1A1410', marginBottom: 16 }}>
         Savings Goals
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -42,21 +40,15 @@ export function GoalsCard({ goals }: Props) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 24 }}>{goal.emoji}</span>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: 'var(--font-syne)', fontWeight: 600, fontSize: 13, color: 'rgb(var(--text-1))' }}>
-                    {goal.name}
-                  </p>
+                  <p style={{ fontWeight: 600, fontSize: 13, color: '#1A1410' }}>{goal.name}</p>
                 </div>
-                <p style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 13, color: '#FBBF24' }}>
+                <p style={{ fontWeight: 700, fontSize: 13, color: '#C9A830' }}>
                   ${goal.saved_amount.toLocaleString()} / ${goal.target_amount.toLocaleString()}
                 </p>
               </div>
-              <div style={{ height: 6, borderRadius: 999, background: 'rgba(var(--dim))', overflow: 'hidden' }}>
+              <div style={{ height: 6, borderRadius: 999, background: '#EDE4D8', overflow: 'hidden' }}>
                 <motion.div
-                  style={{
-                    height: '100%',
-                    borderRadius: 999,
-                    background: 'linear-gradient(90deg, #FBBF24, #F59E0B)',
-                  }}
+                  style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #C9A830, #D07850)' }}
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}

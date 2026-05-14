@@ -1,22 +1,36 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { NumPad } from './NumPad'
 import { AmountDisplay } from './AmountDisplay'
 import { CategoryPicker } from './CategoryPicker'
 import { MOCK_CATEGORIES } from '@/lib/mock-data'
+import { createClient } from '@/lib/supabase/client'
 import { Check } from 'lucide-react'
+import type { Category } from '@/lib/types'
 
 interface Props {
   open: boolean
   onClose: () => void
-  onSave?: (data: { amount: number; categoryId: string; note: string }) => void
+  userId?: string
+  onSaved?: () => void
 }
 
-export function AddExpenseSheet({ open, onClose, onSave }: Props) {
+export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
   const [amount, setAmount] = useState('0')
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [note, setNote] = useState('')
+  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES)
+
+  useEffect(() => {
+    if (!userId) return
+    const load = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.from('categories').select('*').eq('user_id', userId)
+      if (data && data.length > 0) setCategories(data as Category[])
+    }
+    load()
+  }, [userId])
 
   const handleKey = (key: string) => {
     setAmount(prev => {
@@ -31,14 +45,27 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
     })
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const num = parseFloat(amount)
     if (!num || !categoryId) return
-    onSave?.({ amount: num, categoryId, note })
+
+    if (userId) {
+      const supabase = createClient()
+      const today = new Date().toISOString().split('T')[0]
+      await supabase.from('expenses').insert({
+        user_id: userId,
+        category_id: categoryId,
+        amount: num,
+        note: note || null,
+        date: today,
+        is_recurring: false,
+      })
+    }
+
     setAmount('0')
     setCategoryId(null)
     setNote('')
-    onClose()
+    onSaved?.()
   }
 
   const isValid = parseFloat(amount) > 0 && !!categoryId
@@ -48,7 +75,7 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
       <SheetContent
         side="bottom"
         style={{
-          background: 'rgb(var(--bg-surface))',
+          background: '#F5EFE8',
           border: 'none',
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
@@ -59,27 +86,11 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
       >
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 4 }}>
-          <div
-            style={{
-              width: 40,
-              height: 4,
-              borderRadius: 999,
-              background: 'rgba(var(--border), 0.15)',
-            }}
-          />
+          <div style={{ width: 40, height: 4, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
         </div>
 
         {/* Title */}
-        <p
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 700,
-            fontSize: 18,
-            color: 'rgb(var(--text-1))',
-            textAlign: 'center',
-            paddingTop: 8,
-          }}
-        >
+        <p style={{ fontWeight: 700, fontSize: 18, color: '#1A1410', textAlign: 'center', paddingTop: 8 }}>
           Add Expense
         </p>
 
@@ -94,14 +105,14 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
             placeholder="Add a note..."
             style={{
               width: '100%',
-              background: 'rgb(var(--bg-card))',
-              border: '1px solid rgba(var(--border), 0.08)',
+              background: '#fff',
+              border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: 14,
               padding: '12px 16px',
-              fontFamily: 'var(--font-dm)',
               fontSize: 14,
-              color: 'rgb(var(--text-1))',
+              color: '#1A1410',
               outline: 'none',
+              fontFamily: 'var(--font-urbanist), sans-serif',
             }}
           />
         </div>
@@ -109,7 +120,7 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
         {/* Category picker */}
         <div style={{ padding: '0 20px 20px' }}>
           <CategoryPicker
-            categories={MOCK_CATEGORIES}
+            categories={categories}
             selected={categoryId}
             onSelect={setCategoryId}
           />
@@ -123,25 +134,24 @@ export function AddExpenseSheet({ open, onClose, onSave }: Props) {
         {/* Save button */}
         <div style={{ padding: '0 20px 24px' }}>
           <button
+            type="button"
             onClick={handleSave}
             disabled={!isValid}
             style={{
               width: '100%',
               height: 56,
               borderRadius: 18,
-              background: isValid
-                ? 'linear-gradient(135deg, #5B6EF5, #2DD4BF)'
-                : 'rgba(var(--dim))',
+              background: isValid ? '#D07850' : 'rgba(0,0,0,0.08)',
               border: 'none',
               cursor: isValid ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              fontFamily: 'var(--font-syne)',
+              fontFamily: 'var(--font-urbanist), sans-serif',
               fontWeight: 700,
               fontSize: 16,
-              color: isValid ? '#fff' : 'rgb(var(--text-3))',
+              color: isValid ? '#fff' : '#A8998A',
               transition: 'all 200ms ease',
             }}
           >

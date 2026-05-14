@@ -25,6 +25,7 @@ export interface Expense {
   amount: number
   note?: string
   date: string
+  channel?: 'online' | 'offline'
   is_recurring: boolean
   recurrence_type?: 'weekly' | 'monthly'
   created_at: string
@@ -59,9 +60,36 @@ export interface DashboardStats {
 export interface WeeklyData {
   day: string
   amount: number
+  date: string
 }
 
 export interface MonthlyData {
   month: string
   amount: number
+}
+
+export interface ExploreFeature {
+  id: string
+  icon: string
+  iconColor: string
+  iconBg: string
+  title: string
+  body: string
+  cta?: string
+  offer?: string
+}
+
+export interface SpendingCategory {
+  id: string
+  name: string
+  emoji: string
+  color: string
+}
+
+export interface CurrencyDef {
+  code: string
+  symbol: string
+  name: string
+  flag: string
+  locale: string
 }

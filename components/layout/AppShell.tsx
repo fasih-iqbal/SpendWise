@@ -4,27 +4,22 @@ import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
 import { AddExpenseSheet } from '@/components/expenses/AddExpenseSheet'
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+interface Props {
+  children: React.ReactNode
+  userName?: string
+  userId?: string
+  onExpenseAdded?: () => void
+}
+
+export function AppShell({ children, userName, userId, onExpenseAdded }: Props) {
   const [showAddExpense, setShowAddExpense] = useState(false)
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'rgb(var(--bg-primary))' }}>
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block w-60 flex-shrink-0">
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#EDE4D8', fontFamily: 'var(--font-urbanist), sans-serif' }}>
+      <div className="hidden lg:block" style={{ width: 240, flexShrink: 0 }}>
         <Sidebar />
       </div>
-
-      {/* Main content */}
-      <div
-        className="flex-1 flex flex-col relative"
-        style={{ maxWidth: 500, margin: '0 auto', width: '100%' }}
-      >
-        <div
-          className="hidden lg:block fixed inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at 50% 0%, rgba(91,110,245,0.08) 0%, transparent 60%)',
-          }}
-        />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 500, margin: '0 auto', width: '100%', position: 'relative' }}>
         <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 96 }}>
           {children}
         </main>
@@ -32,10 +27,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <BottomNav onAddExpense={() => setShowAddExpense(true)} />
         </div>
       </div>
-
       <AddExpenseSheet
         open={showAddExpense}
         onClose={() => setShowAddExpense(false)}
+        userId={userId}
+        onSaved={() => { setShowAddExpense(false); onExpenseAdded?.() }}
       />
     </div>
   )

@@ -1,58 +1,73 @@
 'use client'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { Bell } from 'lucide-react'
+import { CurrencyPicker } from '@/components/ui/CurrencyPicker'
 import { getGreeting, getGreetingEmoji } from '@/lib/utils'
 
 interface Props {
   userName?: string
+  avatarUrl?: string
 }
 
-export function Header({ userName = 'there' }: Props) {
+export function Header({ userName = 'there', avatarUrl }: Props) {
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
   return (
     <header
-      className="flex items-center justify-between px-5 pt-6 pb-4"
-      style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgb(var(--bg-primary))' }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '18px 20px 14px',
+        background: '#EDE4D8',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        gap: 12,
+      }}
     >
-      <div>
-        <p
-          style={{
-            fontFamily: 'var(--font-dm)',
-            fontSize: 12,
-            color: 'rgb(var(--text-3))',
-          }}
-        >
-          {getGreeting()} {getGreetingEmoji()}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 12, color: '#A8998A', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span>{getGreetingEmoji()}</span>
+          <span>{getGreeting()}</span>
         </p>
         <h1
           style={{
-            fontFamily: 'var(--font-syne)',
             fontWeight: 700,
-            fontSize: 20,
-            color: 'rgb(var(--text-1))',
+            fontSize: 22,
+            color: '#1A1410',
+            letterSpacing: '-0.01em',
           }}
         >
-          {userName}
+          Welcome, <span style={{ fontWeight: 800 }}>{userName}</span>
         </h1>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 12,
-            background: 'rgb(var(--bg-card))',
-            border: '1px solid rgba(var(--border), 0.06)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-          aria-label="Notifications"
-        >
-          <Bell size={16} color="rgb(var(--text-2))" />
-        </button>
-        <ThemeToggle />
-      </div>
+
+      <CurrencyPicker variant="compact" align="right" />
+
+      <button
+        type="button"
+        aria-label="Profile"
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #D07850, #C9A830)',
+          border: '2px solid #fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          flexShrink: 0,
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        }}
+      >
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{initials}</span>
+        )}
+      </button>
     </header>
   )
 }

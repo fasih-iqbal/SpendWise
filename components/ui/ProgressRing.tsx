@@ -13,18 +13,18 @@ export function ProgressRing({ percentage, size = 110, strokeWidth = 10 }: Props
   const offset = circumference - (percentage / 100) * circumference
 
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+    <div style={{ position: 'relative', flexShrink: 0, width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#5B6EF5" />
-            <stop offset="100%" stopColor="#2DD4BF" />
+            <stop offset="0%" stopColor="#D07850" />
+            <stop offset="100%" stopColor="#C9A830" />
           </linearGradient>
         </defs>
         <circle
           cx={size / 2} cy={size / 2} r={radius}
           fill="none"
-          stroke="#1e2540"
+          stroke="#EDE4D8"
           strokeWidth={strokeWidth}
         />
         <motion.circle
@@ -39,28 +39,11 @@ export function ProgressRing({ percentage, size = 110, strokeWidth = 10 }: Props
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          style={{
-            fontFamily: 'var(--font-syne)',
-            fontWeight: 800,
-            fontSize: 22,
-            lineHeight: 1,
-            color: 'rgb(var(--text-1))',
-          }}
-        >
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontWeight: 800, fontSize: 22, lineHeight: 1, color: '#1A1410' }}>
           {percentage}%
         </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-dm)',
-            fontSize: 10,
-            color: 'rgb(var(--text-3))',
-            marginTop: 2,
-          }}
-        >
-          used
-        </span>
+        <span style={{ fontSize: 10, color: '#A8998A', marginTop: 2 }}>used</span>
       </div>
     </div>
   )
