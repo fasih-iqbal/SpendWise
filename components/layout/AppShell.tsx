@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
+import { LockGate } from './LockGate'
 import { AddExpenseSheet } from '@/components/expenses/AddExpenseSheet'
 
 interface Props {
@@ -15,7 +16,8 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
   const [showAddExpense, setShowAddExpense] = useState(false)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#EDE4D8', fontFamily: 'var(--font-urbanist), sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100dvh', background: '#EDE4D8', fontFamily: 'var(--font-urbanist), sans-serif' }}>
+      <LockGate />
       <div className="hidden lg:block" style={{ width: 240, flexShrink: 0 }}>
         <Sidebar />
       </div>

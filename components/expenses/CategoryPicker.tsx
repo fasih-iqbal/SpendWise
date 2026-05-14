@@ -13,6 +13,11 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
       <p style={{ fontWeight: 600, fontSize: 13, color: '#65574A', marginBottom: 12, paddingLeft: 4 }}>
         Category
       </p>
+      {categories.length === 0 && (
+        <p style={{ fontSize: 12, color: '#A8998A', textAlign: 'center', padding: '8px 0' }}>
+          No categories yet. Add one from Profile → Categories.
+        </p>
+      )}
       <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {categories.map(cat => {
           const isSelected = selected === cat.id

@@ -27,8 +27,11 @@ export function BottomNav({ onAddExpense }: Props) {
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        height: 72,
+        paddingTop: 6,
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 6px)',
+        minHeight: 78,
+        maxWidth: 500,
+        margin: '0 auto',
       }}
     >
       {NAV_ITEMS.slice(0, 2).map(item => (
@@ -42,21 +45,22 @@ export function BottomNav({ onAddExpense }: Props) {
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
         style={{
-          width: 52,
-          height: 52,
+          width: 56,
+          height: 56,
           borderRadius: '50%',
           background: '#D07850',
           boxShadow: '0 8px 24px rgba(208,120,80,0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: 'none',
+          border: '3px solid #fff',
           cursor: 'pointer',
           flexShrink: 0,
+          marginTop: -22,
         }}
         aria-label="Add expense"
       >
-        <Plus size={24} color="#fff" strokeWidth={2.5} />
+        <Plus size={26} color="#fff" strokeWidth={2.6} />
       </motion.button>
 
       {NAV_ITEMS.slice(2).map(item => (

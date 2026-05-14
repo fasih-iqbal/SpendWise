@@ -1,43 +1,54 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_EXPENSES } from '@/lib/mock-data'
 import type { Expense } from '@/lib/types'
 
-export function useExpenses(userId?: string) {
-  const [expenses, setExpenses] = useState<Expense[]>(MOCK_EXPENSES)
-  const [loading, setLoading] = useState(false)
+interface NewExpense {
+  category_id: string
+  amount: number
+  note?: string | null
+  date: string
+  channel?: 'online' | 'offline'
+  is_recurring?: boolean
+  recurrence_type?: 'weekly' | 'monthly'
+}
 
-  useEffect(() => {
-    if (!userId) return
-    let cancelled = false
+export function useExpenses(userId: string | undefined) {
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const refresh = useCallback(async () => {
+    if (!userId) { setExpenses([]); setLoading(false); return }
     setLoading(true)
-    const supabase = createClient()
-    ;(async () => {
-      try {
-        const { data } = await supabase
-          .from('expenses')
-          .select('*, category:categories(*)')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-        if (!cancelled && data && data.length > 0) setExpenses(data as Expense[])
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
+    const sb = createClient()
+    const { data } = await sb
+      .from('expenses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+    setExpenses((data ?? []) as Expense[])
+    setLoading(false)
   }, [userId])
 
-  const addExpense = async (exp: Omit<Expense, 'id' | 'created_at' | 'user_id'>) => {
+  useEffect(() => { refresh() }, [refresh])
+
+  const addExpense = useCallback(async (exp: NewExpense) => {
     if (!userId) return
-    const supabase = createClient()
-    const { data } = await supabase
+    const sb = createClient()
+    const { data } = await sb
       .from('expenses')
-      .insert({ ...exp, user_id: userId })
+      .insert({ ...exp, user_id: userId, is_recurring: exp.is_recurring ?? false })
       .select()
       .single()
     if (data) setExpenses(prev => [data as Expense, ...prev])
-  }
+  }, [userId])
 
-  return { expenses, loading, addExpense }
+  const removeExpense = useCallback(async (id: string) => {
+    const sb = createClient()
+    await sb.from('expenses').delete().eq('id', id)
+    setExpenses(prev => prev.filter(e => e.id !== id))
+  }, [])
+
+  return { expenses, loading, refresh, addExpense, removeExpense }
 }

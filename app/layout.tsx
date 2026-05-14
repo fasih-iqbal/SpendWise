@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Urbanist } from 'next/font/google'
 import { CurrencyProvider } from '@/lib/currency'
+import { UserProvider } from '@/lib/user-context'
 import './globals.css'
 
 const urbanist = Urbanist({
@@ -41,7 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           minHeight: '100vh',
         }}
       >
-        <CurrencyProvider>{children}</CurrencyProvider>
+        <CurrencyProvider>
+          <UserProvider>{children}</UserProvider>
+        </CurrencyProvider>
       </body>
     </html>
   )

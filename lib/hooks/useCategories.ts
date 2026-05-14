@@ -1,31 +1,62 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_CATEGORIES } from '@/lib/mock-data'
 import type { Category } from '@/lib/types'
 
-export function useCategories(userId?: string) {
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES)
-  const [loading, setLoading] = useState(false)
+interface NewCategory {
+  name: string
+  emoji: string
+  color: string
+  budget_limit?: number
+}
 
-  useEffect(() => {
-    if (!userId) return
-    let cancelled = false
+export function useCategories(userId: string | undefined) {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const refresh = useCallback(async () => {
+    if (!userId) { setCategories([]); setLoading(false); return }
     setLoading(true)
-    const supabase = createClient()
-    ;(async () => {
-      try {
-        const { data } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('user_id', userId)
-        if (!cancelled && data && data.length > 0) setCategories(data as Category[])
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
+    const sb = createClient()
+    const { data } = await sb
+      .from('categories')
+      .select('*')
+      .eq('user_id', userId)
+      .order('name')
+    setCategories((data ?? []) as Category[])
+    setLoading(false)
   }, [userId])
 
-  return { categories, loading }
+  useEffect(() => { refresh() }, [refresh])
+
+  const addCategory = useCallback(async (c: NewCategory) => {
+    if (!userId) return null
+    const sb = createClient()
+    const { data } = await sb
+      .from('categories')
+      .insert({ ...c, user_id: userId, budget_limit: c.budget_limit ?? 0 })
+      .select()
+      .single()
+    if (data) setCategories(prev => [...prev, data as Category].sort((a, b) => a.name.localeCompare(b.name)))
+    return data as Category | null
+  }, [userId])
+
+  const updateCategory = useCallback(async (id: string, patch: Partial<NewCategory>) => {
+    const sb = createClient()
+    const { data } = await sb
+      .from('categories')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+    if (data) setCategories(prev => prev.map(c => c.id === id ? (data as Category) : c))
+  }, [])
+
+  const removeCategory = useCallback(async (id: string) => {
+    const sb = createClient()
+    await sb.from('categories').delete().eq('id', id)
+    setCategories(prev => prev.filter(c => c.id !== id))
+  }, [])
+
+  return { categories, loading, refresh, addCategory, updateCategory, removeCategory }
 }

@@ -20,8 +20,26 @@ export default function SetupPage() {
         .from('profiles')
         .update({ name, monthly_budget: parseFloat(budget), setup_complete: true })
         .eq('id', user.id)
+
+      const { count } = await supabase
+        .from('categories')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      if (!count) {
+        const defaults = [
+          { name: 'Food',          emoji: '🍔', color: '#D07850', budget_limit: 0 },
+          { name: 'Rent',          emoji: '🏠', color: '#2C6A49', budget_limit: 0 },
+          { name: 'Fuel',          emoji: '⛽', color: '#7F5EA8', budget_limit: 0 },
+          { name: 'Shopping',      emoji: '🛍️', color: '#C9A830', budget_limit: 0 },
+          { name: 'Bills',         emoji: '💡', color: '#A85D3A', budget_limit: 0 },
+          { name: 'Entertainment', emoji: '🎮', color: '#7C8DAF', budget_limit: 0 },
+          { name: 'Health',        emoji: '💊', color: '#3E8C5F', budget_limit: 0 },
+          { name: 'Transport',     emoji: '🚌', color: '#5078A8', budget_limit: 0 },
+        ].map(c => ({ ...c, user_id: user.id }))
+        await supabase.from('categories').insert(defaults)
+      }
     }
-    router.push('/dashboard')
+    router.push('/pin?mode=set')
   }
 
   return (

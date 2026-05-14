@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { CurrencyPicker } from '@/components/ui/CurrencyPicker'
 import { getGreeting, getGreetingEmoji } from '@/lib/utils'
 
@@ -8,6 +9,19 @@ interface Props {
 }
 
 export function Header({ userName = 'there', avatarUrl }: Props) {
+  const [greeting, setGreeting] = useState('')
+  const [emoji, setEmoji] = useState('')
+
+  useEffect(() => {
+    const update = () => {
+      setGreeting(getGreeting())
+      setEmoji(getGreetingEmoji())
+    }
+    update()
+    const id = setInterval(update, 60_000)
+    return () => clearInterval(id)
+  }, [])
+
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
@@ -25,9 +39,9 @@ export function Header({ userName = 'there', avatarUrl }: Props) {
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 12, color: '#A8998A', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span>{getGreetingEmoji()}</span>
-          <span>{getGreeting()}</span>
+        <p style={{ fontSize: 12, color: '#A8998A', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4, minHeight: 16 }}>
+          {emoji && <span>{emoji}</span>}
+          <span>{greeting}</span>
         </p>
         <h1
           style={{
@@ -35,6 +49,9 @@ export function Header({ userName = 'there', avatarUrl }: Props) {
             fontSize: 22,
             color: '#1A1410',
             letterSpacing: '-0.01em',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           Welcome, <span style={{ fontWeight: 800 }}>{userName}</span>

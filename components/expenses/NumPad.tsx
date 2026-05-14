@@ -17,7 +17,7 @@ export function NumPad({ onKey }: Props) {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
       {KEYS.map(key => (
         <motion.button
           key={key}
@@ -25,8 +25,8 @@ export function NumPad({ onKey }: Props) {
           onTap={() => handleKey(key)}
           whileTap={{ scale: 0.96, backgroundColor: 'rgba(208,120,80,0.12)' }}
           style={{
-            height: 56,
-            borderRadius: 16,
+            height: 'clamp(42px, 7.5dvh, 54px)',
+            borderRadius: 14,
             background: '#fff',
             border: '1px solid rgba(0,0,0,0.07)',
             display: 'flex',
