@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, LogOut } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { SettingsCard } from '@/components/profile/SettingsCard'
@@ -127,7 +127,12 @@ export default function ProfilePage() {
         <SettingsCard
           title="Account"
           items={[
-            { icon: '🚪', label: signing ? 'Signing out...' : 'Sign Out', onClick: handleSignOut, danger: true },
+            {
+              icon: <LogOut size={18} color="#E84B4B" strokeWidth={2.4} />,
+              label: signing ? 'Signing out...' : 'Logout',
+              onClick: handleSignOut,
+              danger: true,
+            },
           ]}
         />
 

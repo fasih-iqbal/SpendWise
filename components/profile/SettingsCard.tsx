@@ -2,7 +2,7 @@
 import { ChevronRight } from 'lucide-react'
 
 interface SettingsItem {
-  icon: string
+  icon: React.ReactNode
   label: string
   value?: string
   onClick?: () => void
@@ -58,7 +58,9 @@ export function SettingsCard({ title, items }: Props) {
               transition: 'background 120ms',
             }}
           >
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+            <span style={{ fontSize: 18, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22 }}>
+              {item.icon}
+            </span>
             <span
               style={{
                 fontSize: 14,

@@ -22,7 +22,7 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
         <Sidebar />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 500, margin: '0 auto', width: '100%', position: 'relative' }}>
-        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 96 }}>
+        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 'calc(env(safe-area-inset-bottom) + 110px)' }}>
           {children}
         </main>
         <div className="lg:hidden">

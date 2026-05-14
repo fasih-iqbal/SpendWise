@@ -27,9 +27,9 @@ export function BottomNav({ onAddExpense }: Props) {
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
-        paddingTop: 6,
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 6px)',
-        minHeight: 78,
+        paddingTop: 10,
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 14px)',
+        minHeight: 86,
         maxWidth: 500,
         margin: '0 auto',
       }}

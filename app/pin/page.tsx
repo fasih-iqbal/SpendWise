@@ -1,8 +1,9 @@
 'use client'
 import { Suspense, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Delete, ShieldCheck, LogOut } from 'lucide-react'
+import { Delete } from 'lucide-react'
 import { useUser } from '@/lib/user-context'
 import { hasPin, setPin, verifyPin, markUnlocked } from '@/lib/pin'
 
@@ -11,7 +12,7 @@ type Mode = 'set' | 'confirm' | 'unlock'
 function PinScreen() {
   const router = useRouter()
   const params = useSearchParams()
-  const { user, loading, signOut } = useUser()
+  const { user, loading } = useUser()
   const forceSet = params.get('mode') === 'set'
 
   const [mode, setMode] = useState<Mode>('unlock')
@@ -103,13 +104,22 @@ function PinScreen() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
         <div
           style={{
-            width: 64, height: 64, borderRadius: 20,
-            background: 'linear-gradient(135deg, #D07850, #C9A830)',
+            width: 76, height: 76, borderRadius: 22,
+            background: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(208,120,80,0.3)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          <ShieldCheck size={28} color="#fff" strokeWidth={2.2} />
+          <Image
+            src="/icons/logo.png"
+            alt="SpendWise"
+            width={64}
+            height={64}
+            priority
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         <div style={{ textAlign: 'center', padding: '0 12px' }}>
@@ -154,19 +164,6 @@ function PinScreen() {
       </div>
 
       <NumPad onKey={onKey} disabled={working} />
-
-      <button
-        type="button"
-        onClick={async () => { await signOut(); router.replace('/auth') }}
-        style={{
-          marginTop: 16, alignSelf: 'center',
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: '#65574A', fontSize: 12, display: 'flex', gap: 6, alignItems: 'center',
-          fontFamily: 'inherit',
-        }}
-      >
-        <LogOut size={13} /> Sign out
-      </button>
     </div>
   )
 }

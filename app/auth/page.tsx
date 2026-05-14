@@ -26,6 +26,7 @@ function AuthForm() {
       if (isSignIn) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
+        try { localStorage.setItem('spendwise-onboarded', '1') } catch {}
         router.push('/pin')
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password })
@@ -35,6 +36,7 @@ function AuthForm() {
             .update({ name: name.trim() })
             .eq('id', data.user.id)
         }
+        try { localStorage.setItem('spendwise-onboarded', '1') } catch {}
         router.push('/setup')
       }
     } catch (err: unknown) {

@@ -137,7 +137,7 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
         <div
           style={{
             flexShrink: 0,
-            padding: '8px 20px calc(env(safe-area-inset-bottom) + 10px)',
+            padding: '10px 20px calc(env(safe-area-inset-bottom) + 22px)',
             background: '#F5EFE8',
             borderTop: '1px solid rgba(0,0,0,0.04)',
           }}
@@ -148,9 +148,9 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
             onClick={handleSave}
             disabled={!isValid || saving}
             style={{
-              marginTop: 8,
+              marginTop: 12,
               width: '100%',
-              height: 48,
+              height: 52,
               borderRadius: 16,
               background: isValid ? '#D07850' : 'rgba(0,0,0,0.08)',
               border: 'none',

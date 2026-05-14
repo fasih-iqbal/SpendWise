@@ -1,9 +1,9 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { ChevronsRight } from 'lucide-react'
-import { SketchGrid } from '@/components/onboarding/SketchGrid'
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import { CurrencyPicker } from '@/components/ui/CurrencyPicker'
 
 const SCREENS = [
@@ -26,23 +26,28 @@ const SCREENS = [
 
 const SWIPE_THRESHOLD = 60
 
+function markOnboarded() {
+  try { localStorage.setItem('spendwise-onboarded', '1') } catch {}
+}
+
 export default function OnboardingPage() {
   const [screen, setScreen] = useState(0)
   const [dir, setDir] = useState<1 | -1>(1)
   const router = useRouter()
 
-  const next = () => {
-    if (screen < SCREENS.length - 1) { setDir(1); setScreen(s => s + 1) }
-    else router.push('/auth')
+  const isLast = screen === SCREENS.length - 1
+
+  const goNext = () => {
+    if (!isLast) { setDir(1); setScreen(s => s + 1) }
+    else { markOnboarded(); router.push('/auth') }
   }
-  const prev = () => {
+  const goPrev = () => {
     if (screen > 0) { setDir(-1); setScreen(s => s - 1) }
   }
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
-    const { offset, velocity } = info
-    if (offset.x < -SWIPE_THRESHOLD || velocity.x < -500) next()
-    else if (offset.x > SWIPE_THRESHOLD || velocity.x > 500) prev()
+    if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -500) goNext()
+    else if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 500) goPrev()
   }
 
   return (
@@ -60,36 +65,48 @@ export default function OnboardingPage() {
         overflow: 'hidden',
       }}
     >
-      {/* Skip */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 18 }}>
-        <button
-          type="button"
-          onClick={() => router.push('/auth')}
+      {/* Hero illustration */}
+      <motion.div
+        drag="x"
+        dragElastic={0.18}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={onDragEnd}
+        style={{
+          marginTop: 'max(24px, env(safe-area-inset-top))',
+          display: 'flex',
+          justifyContent: 'center',
+          cursor: 'grab',
+        }}
+      >
+        <motion.div
+          key={screen + '-img'}
+          initial={{ scale: 0.92, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            background: 'none',
-            border: 'none',
-            fontSize: 13,
-            color: '#A8998A',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            padding: 8,
+            width: '100%',
+            maxWidth: 360,
+            aspectRatio: '1 / 1',
+            position: 'relative',
           }}
         >
-          Skip
-        </button>
-      </div>
-
-      {/* Sketch panel */}
-      <div style={{ paddingTop: 12 }}>
-        <SketchGrid />
-      </div>
+          <Image
+            src="/icons/Welcome.png"
+            alt="Welcome to SpendWise"
+            fill
+            priority
+            sizes="(max-width: 430px) 100vw, 360px"
+            style={{ objectFit: 'contain' }}
+          />
+        </motion.div>
+      </motion.div>
 
       <motion.div
         drag="x"
         dragElastic={0.18}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={onDragEnd}
-        style={{ marginTop: 30, flex: 1, display: 'flex', flexDirection: 'column', cursor: 'grab' }}
+        style={{ marginTop: 18, flex: 1, display: 'flex', flexDirection: 'column', cursor: 'grab' }}
       >
         <AnimatePresence mode="wait" custom={dir}>
           <motion.div
@@ -103,7 +120,7 @@ export default function OnboardingPage() {
           >
             <h1
               style={{
-                fontSize: 30,
+                fontSize: 28,
                 fontWeight: 800,
                 color: '#1A1410',
                 lineHeight: 1.15,
@@ -126,7 +143,7 @@ export default function OnboardingPage() {
             </p>
 
             {screen === 2 && (
-              <div style={{ marginTop: 18 }}>
+              <div style={{ marginTop: 16 }}>
                 <CurrencyPicker variant="full" align="left" />
               </div>
             )}
@@ -135,7 +152,7 @@ export default function OnboardingPage() {
       </motion.div>
 
       {/* Dots */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 18 }}>
         {SCREENS.map((_, i) => (
           <button
             key={i}
@@ -156,48 +173,86 @@ export default function OnboardingPage() {
         ))}
       </div>
 
-      {/* Swipe / CTA */}
-      <motion.button
-        type="button"
-        onClick={next}
-        whileTap={{ scale: 0.98 }}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#fff',
-          border: 'none',
-          borderRadius: 999,
-          padding: '6px 24px 6px 6px',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-        }}
-      >
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 200 }}
-          dragElastic={0.1}
-          onDragEnd={(_, info) => { if (info.offset.x > 80) next() }}
-          whileDrag={{ scale: 1.05 }}
+      {/* CTA row */}
+      {isLast ? (
+        <motion.button
+          type="button"
+          onClick={goNext}
+          whileTap={{ scale: 0.98 }}
           style={{
-            width: 50,
-            height: 50,
-            borderRadius: '50%',
+            width: '100%',
+            height: 56,
+            borderRadius: 999,
             background: '#1A1410',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontWeight: 700,
+            fontSize: 15,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexShrink: 0,
-            cursor: 'grab',
+            gap: 10,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
           }}
         >
-          <ChevronsRight size={22} color="#fff" strokeWidth={2.5} />
-        </motion.div>
-        <span style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#1A1410' }}>
-          {screen === SCREENS.length - 1 ? 'Get Started' : 'Swipe to continue'}
-        </span>
-      </motion.button>
+          Get Started
+          <ArrowRight size={18} />
+        </motion.button>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <motion.button
+            type="button"
+            onClick={goPrev}
+            disabled={screen === 0}
+            whileTap={{ scale: 0.94 }}
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: '#fff',
+              border: '1px solid rgba(0,0,0,0.08)',
+              cursor: screen === 0 ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: screen === 0 ? 0.4 : 1,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+              flexShrink: 0,
+            }}
+            aria-label="Back"
+          >
+            <ChevronLeft size={22} color="#1A1410" />
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={goNext}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              flex: 1,
+              height: 56,
+              borderRadius: 999,
+              background: '#D07850',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontWeight: 700,
+              fontSize: 15,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              boxShadow: '0 8px 24px rgba(208,120,80,0.32)',
+            }}
+          >
+            Next
+            <ChevronRight size={20} />
+          </motion.button>
+        </div>
+      )}
     </div>
   )
 }

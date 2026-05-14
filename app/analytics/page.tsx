@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { AnalyticsHeader } from '@/components/analytics/AnalyticsHeader'
-import { DonutChart } from '@/components/analytics/DonutChart'
+import { DonutChart, type DonutSlice } from '@/components/analytics/DonutChart'
 import { SpendingGoalScroll } from '@/components/analytics/SpendingGoalScroll'
 import { SkeletonCard } from '@/components/ui/SkeletonCard'
 import { useUser } from '@/lib/user-context'
@@ -15,6 +15,26 @@ export default function AnalyticsPage() {
   const { expenses, loading: expLoading, refresh } = useExpenses(user?.id)
   const { categories } = useCategories(user?.id)
   const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0)
+
+  const { slices, total } = useMemo(() => {
+    const totals = new Map<string, number>()
+    for (const e of stats.monthExpenses) {
+      const key = e.category_id ?? 'uncat'
+      totals.set(key, (totals.get(key) ?? 0) + Number(e.amount))
+    }
+    const items: DonutSlice[] = Array.from(totals.entries()).map(([id, value]) => {
+      const cat = categories.find(c => c.id === id)
+      return {
+        key: id,
+        label: cat?.name ?? 'Uncategorized',
+        emoji: cat?.emoji,
+        color: cat?.color ?? '#A8998A',
+        value,
+      }
+    }).sort((a, b) => b.value - a.value)
+    const sum = items.reduce((s, x) => s + x.value, 0)
+    return { slices: items, total: sum }
+  }, [stats.monthExpenses, categories])
 
   const spendingCats = useMemo(
     () => categories.slice(0, 8).map(c => ({
@@ -32,8 +52,6 @@ export default function AnalyticsPage() {
     )
   }
 
-  const available = Math.max(0, stats.totalRemaining)
-
   return (
     <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refresh}>
       <AnalyticsHeader title="Analytics" />
@@ -41,9 +59,8 @@ export default function AnalyticsPage() {
         <SkeletonCard height={260} />
       ) : (
         <DonutChart
-          onlineSpend={stats.onlineSpent}
-          offlineSpend={stats.offlineSpent}
-          availableLimit={available}
+          slices={slices}
+          total={total}
           changePct={stats.monthChangePct}
           title="My Expenses"
           period="This month"

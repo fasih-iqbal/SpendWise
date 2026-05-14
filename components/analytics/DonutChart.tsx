@@ -1,49 +1,51 @@
 'use client'
 import { motion } from 'framer-motion'
-import { ChevronDown, TrendingUp } from 'lucide-react'
+import { ChevronDown, TrendingUp, TrendingDown } from 'lucide-react'
 import { useCurrency } from '@/lib/currency'
 
+export interface DonutSlice {
+  key: string
+  label: string
+  value: number
+  color: string
+  emoji?: string
+}
+
 interface Props {
-  onlineSpend: number
-  offlineSpend: number
-  availableLimit: number
-  changePct: number
+  slices: DonutSlice[]
+  total: number
+  changePct?: number
   title?: string
   period?: string
 }
 
-const SEGMENT_COLORS = {
-  online: '#2C6A49',
-  offline: '#C9A830',
-  available: '#7F5EA8',
-}
+const SIZE = 200
+const STROKE = 22
+const RADIUS = (SIZE - STROKE) / 2
+const CIRC = 2 * Math.PI * RADIUS
 
 export function DonutChart({
-  onlineSpend,
-  offlineSpend,
-  availableLimit,
-  changePct,
+  slices,
+  total,
+  changePct = 0,
   title = 'My Expenses',
   period = 'This month',
 }: Props) {
   const { format } = useCurrency()
-  const total = onlineSpend + offlineSpend + availableLimit
-  const pctOnline = total ? onlineSpend / total : 0
-  const pctOffline = total ? offlineSpend / total : 0
-  const pctAvail = total ? availableLimit / total : 0
 
-  const size = 200
-  const strokeWidth = 22
-  const radius = (size - strokeWidth) / 2
-  const circ = 2 * Math.PI * radius
-  const gap = 0.012 * circ // small gap between segments
+  const visible = slices.filter(s => s.value > 0)
+  const positive = changePct >= 0
 
+  // Pre-compute segment dasharray + cumulative offset.
+  const gap = visible.length > 1 ? Math.min(0.012 * CIRC, 6) : 0
   let cum = 0
-  const segments: Array<{ pct: number; color: string; key: string }> = [
-    { pct: pctOnline,  color: SEGMENT_COLORS.online,    key: 'online' },
-    { pct: pctOffline, color: SEGMENT_COLORS.offline,   key: 'offline' },
-    { pct: pctAvail,   color: SEGMENT_COLORS.available, key: 'available' },
-  ]
+  const segs = visible.map(s => {
+    const pct = total > 0 ? s.value / total : 0
+    const dash = Math.max(pct * CIRC - gap, 0)
+    const offset = cum
+    cum += pct * CIRC
+    return { ...s, dash, offset, pct }
+  })
 
   return (
     <div
@@ -82,43 +84,43 @@ export function DonutChart({
       </div>
 
       {/* Donut */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 10px' }}>
-        <div style={{ position: 'relative', width: size, height: size }}>
-          <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-            {/* Track */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 14px' }}>
+        <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+          <svg width={SIZE} height={SIZE} style={{ transform: 'rotate(-90deg)' }}>
             <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
+              cx={SIZE / 2}
+              cy={SIZE / 2}
+              r={RADIUS}
               fill="none"
               stroke="#F2EDE6"
-              strokeWidth={strokeWidth}
+              strokeWidth={STROKE}
             />
-            {segments.map((seg, i) => {
-              const dash = Math.max(seg.pct * circ - gap, 0)
-              const offset = cum
-              cum += seg.pct * circ
-              return (
-                <motion.circle
-                  key={seg.key}
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  fill="none"
-                  stroke={seg.color}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="round"
-                  strokeDasharray={`${dash} ${circ - dash}`}
-                  initial={{ strokeDashoffset: -offset, opacity: 0 }}
-                  animate={{ strokeDashoffset: -offset, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: i * 0.2 }}
-                />
-              )
-            })}
+            {segs.map((seg, i) => (
+              <motion.circle
+                key={seg.key}
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={STROKE}
+                strokeLinecap="round"
+                strokeDasharray={`0 ${CIRC}`}
+                style={{ strokeDashoffset: -seg.offset }}
+                animate={{ strokeDasharray: `${seg.dash} ${CIRC - seg.dash}` }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: 0.08 + i * 0.05,
+                }}
+              />
+            ))}
           </svg>
 
-          {/* Center text */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
             style={{
               position: 'absolute',
               inset: 0,
@@ -129,9 +131,9 @@ export function DonutChart({
               textAlign: 'center',
             }}
           >
-            <p style={{ fontSize: 11, color: '#A8998A', marginBottom: 4 }}>Online Spend</p>
+            <p style={{ fontSize: 11, color: '#A8998A', marginBottom: 4 }}>Total Spent</p>
             <p style={{ fontWeight: 800, fontSize: 22, color: '#1A1410', lineHeight: 1 }}>
-              {format(onlineSpend, { decimals: 2 })}
+              {format(total, { decimals: 0 })}
             </p>
             <div
               style={{
@@ -139,48 +141,65 @@ export function DonutChart({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 3,
-                background: '#D8E8DE',
-                color: '#2C6A49',
+                background: positive ? '#FBE7D9' : '#D8E8DE',
+                color: positive ? '#A85D3A' : '#2C6A49',
                 borderRadius: 999,
                 padding: '2px 8px',
                 fontSize: 10,
                 fontWeight: 700,
               }}
             >
-              <TrendingUp size={10} strokeWidth={2.5} />
-              +{changePct}%
+              {positive ? <TrendingUp size={10} strokeWidth={2.5} /> : <TrendingDown size={10} strokeWidth={2.5} />}
+              {positive ? '+' : ''}{changePct}%
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Legend bar */}
+      {/* Legend grid — wraps to prevent overlap */}
       <div
         style={{
-          background: '#1A1410',
-          borderRadius: 14,
-          padding: '10px 14px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
           gap: 8,
         }}
       >
-        <LegendItem color={SEGMENT_COLORS.online}    label="Online Spend" />
-        <LegendItem color={SEGMENT_COLORS.offline}   label="Offline Spend" />
-        <LegendItem color={SEGMENT_COLORS.available} label="Available limit" />
+        {visible.length === 0 ? (
+          <p style={{ fontSize: 12, color: '#A8998A', textAlign: 'center', gridColumn: '1 / -1', padding: '8px 0' }}>
+            No spending this period.
+          </p>
+        ) : visible.map((s, i) => {
+          const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
+          return (
+            <motion.div
+              key={s.key}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.04, duration: 0.3 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 8px',
+                background: '#F8F4EE',
+                borderRadius: 10,
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: s.color, flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 11, color: '#1A1410', fontWeight: 600, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {s.emoji ? `${s.emoji} ` : ''}{s.label}
+              </span>
+              <span style={{ fontSize: 11, color: '#65574A', fontWeight: 700, flexShrink: 0 }}>{pct}%</span>
+            </motion.div>
+          )
+        })}
       </div>
-    </div>
-  )
-}
-
-function LegendItem({ color, label }: { color: string; label: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>
-        {label}
-      </span>
     </div>
   )
 }
