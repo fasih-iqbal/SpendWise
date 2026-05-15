@@ -73,7 +73,7 @@ export default function OnboardingPage() {
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={onDragEnd}
         style={{
-          marginTop: 'max(20px, env(safe-area-inset-top))',
+          marginTop: 'max(56px, calc(env(safe-area-inset-top) + 36px))',
           display: 'flex',
           justifyContent: 'center',
           cursor: 'grab',
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
         dragElastic={0.18}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={onDragEnd}
-        style={{ marginTop: 24, display: 'flex', flexDirection: 'column', cursor: 'grab', flexShrink: 0 }}
+        style={{ marginTop: 40, display: 'flex', flexDirection: 'column', cursor: 'grab', flexShrink: 0 }}
       >
         <AnimatePresence mode="wait" custom={dir}>
           <motion.div
@@ -196,8 +196,8 @@ export default function OnboardingPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Spacer — capped so CTA stays close to text instead of floating at the very bottom on tall phones */}
-      <div style={{ flex: 1, minHeight: 24, maxHeight: 56 }} />
+      {/* Spacer pushes CTA + dots to bottom on tall screens */}
+      <div style={{ flex: 1, minHeight: 16 }} />
 
       {/* Dots */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 18 }}>
