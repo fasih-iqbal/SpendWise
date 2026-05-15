@@ -57,6 +57,9 @@ const withPWA = require('next-pwa')({
 })
 
 const nextConfig: NextConfig = {
+  // next-pwa adds a webpack config; telling Next.js 16 that Turbopack
+  // is intentional silences the build-breaking conflict warning.
+  turbopack: {},
   headers: async () => [
     {
       source: '/(.*)',
