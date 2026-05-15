@@ -39,6 +39,11 @@ function parseChartDate(dateStr: string): Date {
     : new Date(dateStr);
 }
 
+function expenseDay(dateStr: string): Date {
+  const d = new Date(dateStr);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function getDateRange(period: Period): { start: Date; end: Date } {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -95,7 +100,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
       const todayIso = localISODate(start);
       const amount = expenses
         .filter((e) => {
-          if (e.date !== todayIso) return false;
+          if (expenseDay(e.date).getTime() !== start.getTime()) return false;
           const created = e.created_at
             ? new Date(e.created_at)
             : new Date(`${e.date}T00:00:00`);
@@ -118,7 +123,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
       d.setDate(start.getDate() + i);
       const iso = localISODate(d);
       const amount = expenses
-        .filter((e) => e.date === iso)
+        .filter((e) => expenseDay(e.date).getTime() === d.getTime())
         .reduce((s, e) => s + Number(e.amount), 0);
       points.push({ label: dayLabels[d.getDay()], date: iso, amount });
     }
@@ -139,7 +144,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
       const isoEnd = localISODate(weekEnd);
       const amount = expenses
         .filter((e) => {
-          const d = parseLocalDate(e.date);
+          const d = expenseDay(e.date);
           return d >= weekStart && d <= weekEnd;
         })
         .reduce((s, e) => s + Number(e.amount), 0);
@@ -154,7 +159,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
   for (let m = 0; m < 12; m++) {
     const amount = expenses
       .filter((e) => {
-        const d = parseLocalDate(e.date);
+        const d = expenseDay(e.date);
         return d.getFullYear() === now.getFullYear() && d.getMonth() === m;
       })
       .reduce((s, e) => s + Number(e.amount), 0);
