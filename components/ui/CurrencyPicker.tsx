@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, ChevronDown } from 'lucide-react'
 import { CURRENCIES, useCurrency } from '@/lib/currency'
@@ -9,10 +9,16 @@ interface Props {
   align?: 'left' | 'right'
 }
 
+const SAFE_GAP = 16          // breathing room above safe-area / next button
+const PREFERRED_MAX = 340    // ideal dropdown height when there is room
+
 export function CurrencyPicker({ variant = 'compact', align = 'right' }: Props) {
   const { currency, setCurrency } = useCurrency()
   const [open, setOpen] = useState(false)
+  const [direction, setDirection] = useState<'down' | 'up'>('down')
+  const [maxHeight, setMaxHeight] = useState(PREFERRED_MAX)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!open) return
@@ -23,9 +29,35 @@ export function CurrencyPicker({ variant = 'compact', align = 'right' }: Props) 
     return () => document.removeEventListener('mousedown', onDoc)
   }, [open])
 
+  // Decide whether to drop down or up based on available viewport room.
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return
+    const recompute = () => {
+      const rect = triggerRef.current!.getBoundingClientRect()
+      const vh = window.innerHeight
+      const below = vh - rect.bottom - SAFE_GAP
+      const above = rect.top - SAFE_GAP
+      if (below >= 220 || below >= above) {
+        setDirection('down')
+        setMaxHeight(Math.max(180, Math.min(PREFERRED_MAX, below)))
+      } else {
+        setDirection('up')
+        setMaxHeight(Math.max(180, Math.min(PREFERRED_MAX, above)))
+      }
+    }
+    recompute()
+    window.addEventListener('resize', recompute)
+    window.addEventListener('scroll', recompute, true)
+    return () => {
+      window.removeEventListener('resize', recompute)
+      window.removeEventListener('scroll', recompute, true)
+    }
+  }, [open])
+
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(o => !o)}
         style={{
@@ -60,14 +92,16 @@ export function CurrencyPicker({ variant = 'compact', align = 'right' }: Props) 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            initial={{ opacity: 0, y: direction === 'down' ? -8 : 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            exit={{ opacity: 0, y: direction === 'down' ? -8 : 8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             role="listbox"
             style={{
               position: 'absolute',
-              top: 'calc(100% + 8px)',
+              ...(direction === 'down'
+                ? { top: 'calc(100% + 8px)' }
+                : { bottom: 'calc(100% + 8px)' }),
               [align]: 0,
               minWidth: 220,
               background: '#fff',
@@ -76,8 +110,10 @@ export function CurrencyPicker({ variant = 'compact', align = 'right' }: Props) 
               boxShadow: '0 12px 40px rgba(0,0,0,0.16)',
               padding: 8,
               zIndex: 100,
-              maxHeight: 340,
+              maxHeight,
               overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
             }}
           >
             {CURRENCIES.map(c => {

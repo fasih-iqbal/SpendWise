@@ -196,8 +196,8 @@ export default function OnboardingPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Spacer pushes CTA + dots to bottom on tall screens */}
-      <div style={{ flex: 1, minHeight: 16 }} />
+      {/* Spacer — capped so CTA stays close to text instead of floating at the very bottom on tall phones */}
+      <div style={{ flex: 1, minHeight: 24, maxHeight: 56 }} />
 
       {/* Dots */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 18 }}>
