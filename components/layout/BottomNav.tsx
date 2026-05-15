@@ -13,7 +13,6 @@ const NAV_ITEMS = [
 
 interface Props {
   onAddExpense?: () => void
-  /** Pass true to animate the nav out of view (e.g. when a sheet is open) */
   hidden?: boolean
 }
 
@@ -30,25 +29,26 @@ export function BottomNav({ onAddExpense, hidden = false }: Props) {
           transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
           style={{
             position: 'fixed',
-            /* Lifted 16px above the very bottom so it floats slightly */
             bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'calc(100% - 32px)',
-            maxWidth: 468,
+            /*
+             * left + right gives natural full-width-minus-margins.
+             * This is the ONLY reliable way to do this on iOS Safari with
+             * position:fixed — no transform, no left:50%, no margin:auto.
+             */
+            left: 16,
+            right: 16,
             zIndex: 100,
             background: '#FFFFFF',
-            /* Rounded pill shape since it's floating */
             borderRadius: 28,
             border: '1px solid rgba(0,0,0,0.07)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
             paddingTop: 10,
+            paddingBottom: 10,
             paddingLeft: 4,
             paddingRight: 4,
-            paddingBottom: 10,
           }}
           aria-label="Main navigation"
         >
@@ -129,7 +129,6 @@ function NavItem({
           fontSize: 10,
           color: active ? '#D07850' : '#A8998A',
           fontWeight: active ? 700 : 400,
-          letterSpacing: active ? '0.01em' : 0,
           whiteSpace: 'nowrap',
         }}
       >

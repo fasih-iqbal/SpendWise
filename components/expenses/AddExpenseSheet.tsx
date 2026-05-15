@@ -138,11 +138,11 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
         <div
           style={{
             flexShrink: 0,
-            padding: '10px 20px 0',
+            padding: '14px 20px 0',
             background: '#F5EFE8',
             borderTop: '1px solid rgba(0,0,0,0.04)',
-            /* Lift everything above the iOS home bar */
-            paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+            /* Generous lift above the iOS home bar */
+            paddingBottom: 'max(32px, env(safe-area-inset-bottom))',
           }}
         >
           <NumPad onKey={handleKey} />
@@ -152,6 +152,7 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
             disabled={!isValid || saving}
             style={{
               marginTop: 12,
+              marginBottom: 20,
               width: '100%',
               height: 52,
               borderRadius: 16,
