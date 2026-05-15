@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, ArrowLeftRight, BarChart2, User, Plus } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV_ITEMS = [
   { href: '/dashboard',    icon: Home,           label: 'Home' },
@@ -13,85 +13,82 @@ const NAV_ITEMS = [
 
 interface Props {
   onAddExpense?: () => void
+  /** Pass true to animate the nav out of view (e.g. when a sheet is open) */
+  hidden?: boolean
 }
 
-export function BottomNav({ onAddExpense }: Props) {
+export function BottomNav({ onAddExpense, hidden = false }: Props) {
   const pathname = usePathname()
 
   return (
-    /*
-     * position:fixed — sits above the page, always visible.
-     * IMPORTANT: no ancestor must have overflow:hidden or transform,
-     * otherwise WebKit clips/re-parents fixed elements.
-     *
-     * We center within the 500px column by using left:50% + translateX(-50%)
-     * which correctly aligns with the content column on all screen sizes.
-     */
-    <nav
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: 500,
-        zIndex: 100,
-        background: '#FFFFFF',
-        borderTop: '1px solid rgba(0,0,0,0.08)',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        boxShadow: '0 -6px 30px rgba(0,0,0,0.09)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        /* Top padding for the nav items themselves */
-        paddingTop: 10,
-        paddingLeft: 4,
-        paddingRight: 4,
-        /*
-         * paddingBottom = home indicator safe area.
-         * env() falls back to 14px on devices without a home bar.
-         */
-        paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
-      }}
-      aria-label="Main navigation"
-    >
-      {NAV_ITEMS.slice(0, 2).map(item => (
-        <NavItem key={item.href} {...item} active={pathname === item.href} />
-      ))}
+    <AnimatePresence>
+      {!hidden && (
+        <motion.nav
+          key="bottom-nav"
+          initial={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+          style={{
+            position: 'fixed',
+            /* Lifted 16px above the very bottom so it floats slightly */
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'calc(100% - 32px)',
+            maxWidth: 468,
+            zIndex: 100,
+            background: '#FFFFFF',
+            /* Rounded pill shape since it's floating */
+            borderRadius: 28,
+            border: '1px solid rgba(0,0,0,0.07)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            paddingTop: 10,
+            paddingLeft: 4,
+            paddingRight: 4,
+            paddingBottom: 10,
+          }}
+          aria-label="Main navigation"
+        >
+          {NAV_ITEMS.slice(0, 2).map(item => (
+            <NavItem key={item.href} {...item} active={pathname === item.href} />
+          ))}
 
-      {/* FAB — floats above the nav bar */}
-      <motion.button
-        onClick={onAddExpense}
-        whileTap={{ scale: 0.95 }}
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          background: '#D07850',
-          boxShadow: '0 8px 24px rgba(208,120,80,0.45)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '3px solid #fff',
-          cursor: 'pointer',
-          flexShrink: 0,
-          /* Lift it above the nav bar */
-          marginTop: -24,
-          position: 'relative',
-          zIndex: 1,
-        }}
-        aria-label="Add expense"
-      >
-        <Plus size={26} color="#fff" strokeWidth={2.6} />
-      </motion.button>
+          {/* FAB */}
+          <motion.button
+            onClick={onAddExpense}
+            whileTap={{ scale: 0.95 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: '#D07850',
+              boxShadow: '0 6px 20px rgba(208,120,80,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '3px solid #fff',
+              cursor: 'pointer',
+              flexShrink: 0,
+              marginTop: -20,
+              position: 'relative',
+              zIndex: 1,
+            }}
+            aria-label="Add expense"
+          >
+            <Plus size={24} color="#fff" strokeWidth={2.6} />
+          </motion.button>
 
-      {NAV_ITEMS.slice(2).map(item => (
-        <NavItem key={item.href} {...item} active={pathname === item.href} />
-      ))}
-    </nav>
+          {NAV_ITEMS.slice(2).map(item => (
+            <NavItem key={item.href} {...item} active={pathname === item.href} />
+          ))}
+        </motion.nav>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -115,7 +112,7 @@ function NavItem({
         flexDirection: 'column',
         alignItems: 'center',
         gap: 3,
-        padding: '6px 14px 4px',
+        padding: '4px 14px 2px',
         minWidth: 52,
         textDecoration: 'none',
         WebkitTapHighlightColor: 'transparent',

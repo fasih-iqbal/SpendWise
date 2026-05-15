@@ -31,7 +31,36 @@ export function useExpenses(userId: string | undefined) {
     setLoading(false)
   }, [userId])
 
+  // Initial fetch
   useEffect(() => { refresh() }, [refresh])
+
+  // ── Realtime subscription ───────────────────────────────────────────────
+  // Any INSERT / UPDATE / DELETE on the expenses table for this user
+  // triggers an immediate re-fetch so charts update without any user action.
+  useEffect(() => {
+    if (!userId) return
+    const sb = createClient()
+    const channel = sb
+      .channel(`expenses:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',           // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'expenses',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          // Re-fetch on any change so all charts (WeeklyChart, DonutChart,
+          // TransactionList, hero card) update in real time.
+          refresh()
+        },
+      )
+      .subscribe()
+
+    return () => { sb.removeChannel(channel) }
+  }, [userId, refresh])
+  // ────────────────────────────────────────────────────────────────────────
 
   const addExpense = useCallback(async (exp: NewExpense) => {
     if (!userId) return
@@ -41,6 +70,7 @@ export function useExpenses(userId: string | undefined) {
       .insert({ ...exp, user_id: userId, is_recurring: exp.is_recurring ?? false })
       .select()
       .single()
+    // Optimistic update + realtime will also fire for consistency
     if (data) setExpenses(prev => [data as Expense, ...prev])
   }, [userId])
 

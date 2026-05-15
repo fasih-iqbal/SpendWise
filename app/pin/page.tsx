@@ -169,8 +169,8 @@ function PinScreen() {
 
       <NumPad onKey={onKey} disabled={working} />
 
-      {/* Safe-area spacer — pushes numpad above home bar on iPhone */}
-      <div style={{ height: 'max(20px, env(safe-area-inset-bottom))' }} />
+      {/* Safe-area spacer — provides comfortable gap above iOS home bar */}
+      <div style={{ height: 'max(36px, env(safe-area-inset-bottom))' }} />
     </div>
   )
 }

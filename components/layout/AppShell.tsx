@@ -47,15 +47,18 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
           maxWidth: 500,
           margin: '0 auto',
           width: '100%',
-          paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 8px)',
+          paddingBottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
         }}
       >
         {children}
       </div>
 
-      {/* BottomNav — mobile only, rendered outside any overflow container */}
+      {/* BottomNav — mobile only, hidden while Add Expense sheet is open */}
       <div className="lg:hidden">
-        <BottomNav onAddExpense={() => setShowAddExpense(true)} />
+        <BottomNav
+          onAddExpense={() => setShowAddExpense(true)}
+          hidden={showAddExpense}
+        />
       </div>
 
       <AddExpenseSheet
