@@ -11,8 +11,11 @@ interface Props {
 }
 
 const SAFE_GAP = 16
-const PREFERRED_MAX = 340
-const MIN_HEIGHT = 180
+/* Show ~3 rows then scroll (item ≈ 52px + container padding 16). */
+const ROW_HEIGHT = 52
+const VISIBLE_ROWS = 3
+const PREFERRED_MAX = ROW_HEIGHT * VISIBLE_ROWS + 16
+const MIN_HEIGHT = 120
 const PANEL_WIDTH = 260
 
 interface PanelPos {
