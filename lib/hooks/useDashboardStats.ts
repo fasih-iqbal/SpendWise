@@ -1,5 +1,6 @@
 'use client'
 import { useMemo } from 'react'
+import { localISODate } from '@/lib/utils'
 import type { Expense, WeeklyData } from '@/lib/types'
 
 interface Result {
@@ -48,7 +49,7 @@ export function useDashboardStats(expenses: Expense[], totalBudget: number): Res
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today)
       d.setDate(today.getDate() - i)
-      const iso = d.toISOString().split('T')[0]
+      const iso = localISODate(d)
       const dayTotal = expenses
         .filter(e => e.date === iso)
         .reduce((s, e) => s + Number(e.amount), 0)
