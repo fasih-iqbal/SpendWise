@@ -44,7 +44,7 @@ export function BottomNav({ onAddExpense, hidden = false }: Props) {
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-around',
+            justifyContent: 'space-between',
             paddingTop: 10,
             paddingBottom: 10,
             paddingLeft: 4,
@@ -56,32 +56,43 @@ export function BottomNav({ onAddExpense, hidden = false }: Props) {
             <NavItem key={item.href} {...item} active={pathname === item.href} />
           ))}
 
-          {/* FAB */}
-          <motion.button
-            onClick={onAddExpense}
-            whileTap={{ scale: 0.95 }}
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
+          {/* FAB — flex:1 slot keeps it horizontally centered between
+              the two left and two right NavItems, which are also flex:1. */}
+          <div
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: '50%',
-              background: '#D07850',
-              boxShadow: '0 6px 20px rgba(208,120,80,0.45)',
+              flex: 1,
               display: 'flex',
-              alignItems: 'center',
               justifyContent: 'center',
-              border: '3px solid #fff',
-              cursor: 'pointer',
-              flexShrink: 0,
-              marginTop: -20,
-              position: 'relative',
-              zIndex: 1,
+              alignItems: 'center',
+              minWidth: 0,
             }}
-            aria-label="Add expense"
           >
-            <Plus size={24} color="#fff" strokeWidth={2.6} />
-          </motion.button>
+            <motion.button
+              onClick={onAddExpense}
+              whileTap={{ scale: 0.95 }}
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: '50%',
+                background: '#D07850',
+                boxShadow: '0 6px 20px rgba(208,120,80,0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '3px solid #fff',
+                cursor: 'pointer',
+                flexShrink: 0,
+                marginTop: -20,
+                position: 'relative',
+                zIndex: 1,
+              }}
+              aria-label="Add expense"
+            >
+              <Plus size={24} color="#fff" strokeWidth={2.6} />
+            </motion.button>
+          </div>
 
           {NAV_ITEMS.slice(2).map(item => (
             <NavItem key={item.href} {...item} active={pathname === item.href} />
@@ -108,12 +119,13 @@ function NavItem({
       href={href}
       prefetch
       style={{
+        flex: 1,
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: 3,
-        padding: '4px 14px 2px',
-        minWidth: 52,
+        padding: '4px 0 2px',
         textDecoration: 'none',
         WebkitTapHighlightColor: 'transparent',
         userSelect: 'none',

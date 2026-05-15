@@ -5,6 +5,7 @@ import { NumPad } from './NumPad'
 import { CategoryPicker } from './CategoryPicker'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrency } from '@/lib/currency'
+import { localISODate } from '@/lib/utils'
 import { Check } from 'lucide-react'
 import type { Category } from '@/lib/types'
 
@@ -56,7 +57,7 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
     try {
       if (userId) {
         const supabase = createClient()
-        const today = new Date().toISOString().split('T')[0]
+        const today = localISODate()
         await supabase.from('expenses').insert({
           user_id: userId,
           category_id: categoryId,

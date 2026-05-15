@@ -60,6 +60,20 @@ export function useExpenses(userId: string | undefined) {
 
     return () => { sb.removeChannel(channel) }
   }, [userId, refresh])
+
+  // Refresh whenever the tab regains focus / visibility — guarantees
+  // analytics & dashboard always show current data even if the realtime
+  // websocket dropped or the Supabase publication isn't enabled.
+  useEffect(() => {
+    if (!userId) return
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh() }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [userId, refresh])
   // ────────────────────────────────────────────────────────────────────────
 
   const addExpense = useCallback(async (exp: NewExpense) => {

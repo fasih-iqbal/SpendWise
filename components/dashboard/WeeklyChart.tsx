@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useCurrency } from '@/lib/currency'
+import { localISODate } from '@/lib/utils'
 import type { Expense } from '@/lib/types'
 
 type Period = 'Day' | 'Week' | 'Month' | 'Year'
