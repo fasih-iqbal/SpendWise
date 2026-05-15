@@ -22,6 +22,7 @@ interface Props {
 
 const HEIGHT = 130;
 const PADDING = { top: 20, bottom: 28, left: 8, right: 8 };
+const MIN_STEP_X = 56;
 
 function parseLocalDate(dateStr: string): Date {
   const parts = dateStr.split("-");
@@ -92,10 +93,10 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
   ];
 
   if (period === "Day") {
-    // 24 hours broken into 6 blocks of 4h
+    // 24 hours broken into 1h buckets
     const { start } = getDateRange("Day");
     const points: ChartPoint[] = [];
-    for (let h = 0; h < 24; h += 4) {
+    for (let h = 0; h < 24; h += 1) {
       const label = `${String(h).padStart(2, "0")}:00`;
       const todayIso = localISODate(start);
       const amount = expenses
@@ -105,7 +106,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
             ? new Date(e.created_at)
             : new Date(`${e.date}T00:00:00`);
           const hour = created.getHours();
-          return hour >= h && hour < h + 4;
+          return hour >= h && hour < h + 1;
         })
         .reduce((s, e) => s + Number(e.amount), 0);
       const iso = `${todayIso}T${String(h).padStart(2, "0")}:00`;
@@ -131,15 +132,15 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
   }
 
   if (period === "Month") {
-    // last 4 weeks (28 days) shown as 4 weekly buckets
+    // current month shown as 5 weekly buckets
     const { start, end } = getDateRange("Month");
     const monthStart = new Date(start);
     const points: ChartPoint[] = [];
-    for (let w = 0; w < 4; w++) {
+    for (let w = 0; w < 5; w++) {
       const weekStart = new Date(monthStart);
       weekStart.setDate(monthStart.getDate() + w * 7);
-      const weekEnd = w < 3 ? new Date(weekStart) : new Date(end);
-      if (w < 3) weekEnd.setDate(weekStart.getDate() + 6);
+      const weekEnd = w < 4 ? new Date(weekStart) : new Date(end);
+      if (w < 4) weekEnd.setDate(weekStart.getDate() + 6);
       const isoStart = localISODate(weekStart);
       const isoEnd = localISODate(weekEnd);
       const amount = expenses
@@ -197,8 +198,17 @@ export function WeeklyChart({ expenses }: Props) {
       const today = new Date();
       return today.getDay(); // Sun=0
     }
-    if (activePeriod === "Day") return 0;
-    if (activePeriod === "Month") return 3;
+    if (activePeriod === "Day") {
+      const hour = new Date().getHours();
+      return hour;
+    }
+    if (activePeriod === "Month") {
+      const { start } = getDateRange("Month");
+      const today = new Date();
+      const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const daysSinceStart = Math.floor((todayDay.getTime() - start.getTime()) / 86400000);
+      return Math.min(4, Math.max(0, Math.floor(daysSinceStart / 7)));
+    }
     return new Date().getMonth();
   }, [activePeriod]);
 
@@ -227,7 +237,12 @@ export function WeeklyChart({ expenses }: Props) {
   const min = 0;
   const innerH = HEIGHT - PADDING.top - PADDING.bottom;
   const innerW = width - PADDING.left - PADDING.right;
-  const stepX = data.length > 1 ? innerW / (data.length - 1) : 0;
+  const chartWidth = Math.max(
+    width,
+    PADDING.left + PADDING.right + (data.length - 1) * MIN_STEP_X,
+  );
+  const chartInnerW = chartWidth - PADDING.left - PADDING.right;
+  const stepX = data.length > 1 ? chartInnerW / (data.length - 1) : 0;
 
   const points = data.map((d, i) => ({
     x: PADDING.left + i * stepX,
@@ -393,11 +408,11 @@ export function WeeklyChart({ expenses }: Props) {
       {/* Chart */}
       <div
         ref={containerRef}
-        style={{ position: "relative", width: "100%", height: HEIGHT }}
+        style={{ position: "relative", width: "100%", height: HEIGHT, overflowX: "auto" }}
       >
         <svg
           key={activePeriod}
-          width={width}
+          width={chartWidth}
           height={HEIGHT}
           style={{ display: "block", overflow: "visible" }}
         >
@@ -490,7 +505,7 @@ export function WeeklyChart({ expenses }: Props) {
         <div
           style={{
             position: "absolute",
-            left: Math.min(Math.max(sel.x - 60, 0), width - 120),
+            left: Math.min(Math.max(sel.x - 60, 0), chartWidth - 120),
             top: Math.max(sel.y - 56, 0),
             background: "#1A1410",
             color: "#fff",
