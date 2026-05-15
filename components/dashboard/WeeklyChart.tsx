@@ -182,6 +182,16 @@ export function WeeklyChart({ expenses }: Props) {
     [expenses, activePeriod],
   );
 
+  const periodTotal = useMemo(() => {
+    const { start, end } = getDateRange(activePeriod);
+    return expenses
+      .filter((e) => {
+        const d = expenseDay(e.date);
+        return d >= start && d <= end;
+      })
+      .reduce((s, e) => s + Number(e.amount), 0);
+  }, [expenses, activePeriod]);
+
   const defaultSelected = useMemo(() => {
     if (activePeriod === "Week") {
       const today = new Date();
@@ -376,7 +386,7 @@ export function WeeklyChart({ expenses }: Props) {
           <span style={{ color: '#fff', fontWeight: 700, fontSize: 12 }}>{currency.symbol}</span>
         </div> */}
         <p style={{ fontWeight: 700, fontSize: 18, color: "#D07850" }}>
-          -{format(sel.val, { decimals: 2 })}
+          -{format(periodTotal, { decimals: 2 })}
         </p>
       </div>
 
