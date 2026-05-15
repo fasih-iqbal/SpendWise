@@ -1,13 +1,37 @@
 'use client'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Plus, Trash2, Receipt, UserPlus, Users, History } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, UserPlus, Users, History } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
-import { AddSplitSheet } from '@/components/splits/AddSplitSheet'
+import { AddSplitSheet, EMPTY_DRAFT, type SplitDraft } from '@/components/splits/AddSplitSheet'
 import { AddContactSheet } from '@/components/splits/AddContactSheet'
 import { useUser } from '@/lib/user-context'
 import { useSplits } from '@/lib/hooks/useSplits'
 import { useCurrency } from '@/lib/currency'
+
+/** Maps free-text notes to a relevant emoji + tint. Falls back to a neutral receipt. */
+function inferIcon(note?: string): { emoji: string; bg: string; ring: string } {
+  const n = (note ?? '').toLowerCase()
+  if (/(food|lunch|dinner|breakfast|brunch|snack|cafe|coffee|tea|pizza|burger|sushi|restaurant|meal|eat)/.test(n))
+    return { emoji: '🍽️', bg: '#FBE7D9', ring: '#D07850' }
+  if (/(uber|taxi|cab|ride|fuel|petrol|gas|car|bus|train|metro|flight|trip|travel)/.test(n))
+    return { emoji: '🚗', bg: '#E1ECF7', ring: '#5078A8' }
+  if (/(hotel|airbnb|stay|room|rent|hostel)/.test(n))
+    return { emoji: '🏨', bg: '#F2EAF8', ring: '#7F5EA8' }
+  if (/(movie|cinema|netflix|game|concert|party|club|fun|entertainment|ticket)/.test(n))
+    return { emoji: '🎬', bg: '#FFF1D6', ring: '#C9A830' }
+  if (/(grocery|groceries|mart|store|shop|market|amazon)/.test(n))
+    return { emoji: '🛒', bg: '#D8E8DE', ring: '#2C6A49' }
+  if (/(bill|utility|electric|water|internet|wifi|phone|subscription)/.test(n))
+    return { emoji: '💡', bg: '#FBE7D9', ring: '#A85D3A' }
+  if (/(gift|birthday|present|wedding)/.test(n))
+    return { emoji: '🎁', bg: '#F8DDE7', ring: '#C0567B' }
+  if (/(health|doctor|pharmacy|medicine|hospital|clinic)/.test(n))
+    return { emoji: '💊', bg: '#D8E8DE', ring: '#2C6A49' }
+  if (/(drink|beer|bar|wine|alcohol)/.test(n))
+    return { emoji: '🍺', bg: '#FFF1D6', ring: '#C9A830' }
+  return { emoji: '🧾', bg: '#F2EDE6', ring: '#65574A' }
+}
 
 export default function SplitsPage() {
   const router = useRouter()
@@ -20,17 +44,26 @@ export default function SplitsPage() {
 
   const [openSplit, setOpenSplit] = useState(false)
   const [openContact, setOpenContact] = useState(false)
-  /** When set, reopen split sheet after contact is added and pre-toggle this id. */
+  /** Draft survives sheet remounts when user goes Add Person → back. */
+  const [draft, setDraft] = useState<SplitDraft>(EMPTY_DRAFT)
   const returnToSplitRef = useRef(false)
-  const [pendingPreSelect, setPendingPreSelect] = useState<string | null>(null)
 
   const meName = user?.name || 'You'
+
+  const openNewSplit = () => {
+    if (contacts.length === 0) {
+      alert('Add a person first to split bills with.')
+      setOpenContact(true)
+      return
+    }
+    setDraft(EMPTY_DRAFT)
+    setOpenSplit(true)
+  }
 
   return (
     <AppShell userId={user?.id} userName={user?.name} hideBottomNav={openSplit || openContact}>
       <div style={{ height: 'max(24px, env(safe-area-inset-top))', background: '#EDE4D8' }} />
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 20px 16px' }}>
         <button
           type="button"
@@ -61,7 +94,6 @@ export default function SplitsPage() {
         </button>
       </div>
 
-      {/* Summary card */}
       <div
         style={{
           margin: '0 20px 16px',
@@ -92,18 +124,10 @@ export default function SplitsPage() {
         </div>
       </div>
 
-      {/* Add Split CTA */}
       <div style={{ padding: '0 20px 16px' }}>
         <button
           type="button"
-          onClick={() => {
-            if (contacts.length === 0) {
-              alert('Add a person first to split bills with.')
-              setOpenContact(true)
-              return
-            }
-            setOpenSplit(true)
-          }}
+          onClick={openNewSplit}
           style={{
             width: '100%',
             height: 52,
@@ -114,10 +138,7 @@ export default function SplitsPage() {
             cursor: 'pointer',
             fontWeight: 700,
             fontSize: 15,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             fontFamily: 'inherit',
             boxShadow: '0 6px 18px rgba(208,120,80,0.32)',
           }}
@@ -126,7 +147,6 @@ export default function SplitsPage() {
         </button>
       </div>
 
-      {/* People */}
       <Section title="People" icon={<Users size={14} />}>
         {contacts.length === 0 ? (
           <Empty hint="Add someone you split bills with." />
@@ -182,7 +202,6 @@ export default function SplitsPage() {
         )}
       </Section>
 
-      {/* Splits */}
       <Section title="Recent Splits" icon={<History size={14} />}>
         {splits.length === 0 ? (
           <Empty hint="Splits you create show up here." />
@@ -190,7 +209,8 @@ export default function SplitsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {splits.map(sp => {
               const payerName = sp.payerId === 'me' ? meName : (contacts.find(c => c.id === sp.payerId)?.name ?? 'Unknown')
-              const share = sp.totalAmount / sp.participantIds.length
+              const share = sp.totalAmount / Math.max(sp.participantIds.length, 1)
+              const ico = inferIcon(sp.note)
               return (
                 <div
                   key={sp.id}
@@ -201,10 +221,13 @@ export default function SplitsPage() {
                   }}
                 >
                   <div style={{
-                    width: 36, height: 36, borderRadius: 12,
-                    background: '#F8F4EE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    width: 38, height: 38, borderRadius: 12,
+                    background: ico.bg,
+                    boxShadow: `inset 0 0 0 1px ${ico.ring}33`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    fontSize: 18, lineHeight: 1,
                   }}>
-                    <Receipt size={16} color="#65574A" />
+                    {ico.emoji}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 600, fontSize: 14, color: '#1A1410', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -240,9 +263,9 @@ export default function SplitsPage() {
         onClose={() => setOpenSplit(false)}
         contacts={contacts}
         meName={meName}
-        onSave={addSplit}
-        preSelectId={pendingPreSelect}
-        onConsumePreSelect={() => setPendingPreSelect(null)}
+        onSave={(sp) => { addSplit(sp) }}
+        draft={draft}
+        onDraftChange={setDraft}
         onAddContact={() => {
           returnToSplitRef.current = true
           setOpenSplit(false)
@@ -255,13 +278,15 @@ export default function SplitsPage() {
           setOpenContact(false)
           if (returnToSplitRef.current) {
             returnToSplitRef.current = false
-            // Reopen split sheet on next tick so the contact list re-renders fresh
             setTimeout(() => setOpenSplit(true), 60)
           }
         }}
         onAdd={(name) => {
           const c = addContact(name)
-          if (returnToSplitRef.current) setPendingPreSelect(c.id)
+          // If we came from the split sheet, pre-toggle the new person in the draft
+          if (returnToSplitRef.current) {
+            setDraft(d => ({ ...d, participants: [...d.participants, c.id] }))
+          }
           return c.id
         }}
       />

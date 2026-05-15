@@ -17,7 +17,6 @@ export function AddContactSheet({ open, onClose, onAdd }: Props) {
   useEffect(() => {
     if (!open) return
     setName('')
-    // Defer focus so Radix has finished mounting + iOS keyboard pops reliably
     const id = window.setTimeout(() => inputRef.current?.focus(), 120)
     return () => window.clearTimeout(id)
   }, [open])
@@ -49,16 +48,13 @@ export function AddContactSheet({ open, onClose, onAdd }: Props) {
           height: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          /* keep above iOS home bar even when keyboard is closed */
           paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
         }}
       >
-        {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4 }}>
           <div style={{ width: 40, height: 4, borderRadius: 999, background: 'rgba(0,0,0,0.14)' }} />
         </div>
 
-        {/* Title row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 20px 10px' }}>
           <button
             type="button"
@@ -71,9 +67,7 @@ export function AddContactSheet({ open, onClose, onAdd }: Props) {
           <span style={{ width: 56 }} />
         </div>
 
-        {/* Body */}
         <div style={{ padding: '4px 20px 16px' }}>
-          {/* Avatar preview */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
             <div
               style={{
@@ -87,7 +81,6 @@ export function AddContactSheet({ open, onClose, onAdd }: Props) {
             </div>
           </div>
 
-          {/* Input */}
           <label
             style={{
               display: 'flex',
@@ -140,7 +133,6 @@ export function AddContactSheet({ open, onClose, onAdd }: Props) {
             Stored locally on this device. They won&apos;t get a notification.
           </p>
 
-          {/* Save — sticky-feel, always reachable */}
           <button
             type="button"
             onClick={submit}

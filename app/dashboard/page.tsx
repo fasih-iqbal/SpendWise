@@ -43,7 +43,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refreshExp} remaining={stats.totalRemaining}>
+    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refreshExp} remaining={stats.totalRemaining} hideBottomNav={openBudget}>
       <Header
         userName={user?.name ?? 'there'}
         avatarUrl={user?.avatar_url}

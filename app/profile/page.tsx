@@ -38,7 +38,7 @@ export default function ProfilePage() {
   const openAdd = () => { setCatInitialMode('add'); setOpenCats(true) }
 
   return (
-    <AppShell>
+    <AppShell hideBottomNav={openBudget || openCats}>
       {/* Clean header — no back button, no title text */}
       <div style={{ height: 'max(24px, env(safe-area-inset-top))', background: '#EDE4D8' }} />
 

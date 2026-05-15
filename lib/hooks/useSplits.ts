@@ -72,7 +72,6 @@ export function useSplits(userId: string | undefined) {
   const removeContact = useCallback((id: string) => {
     setState(s => ({
       contacts: s.contacts.filter(c => c.id !== id),
-      // Drop any split that references this contact to avoid dangling balances
       splits: s.splits.filter(sp => sp.payerId !== id && !sp.participantIds.includes(id)),
     }))
   }, [])
@@ -100,11 +99,8 @@ export function useSplits(userId: string | undefined) {
           if (pid === 'me') continue
           map.set(pid, (map.get(pid) ?? 0) + share)
         }
-      } else {
-        // A contact paid. I owe them my share if I was a participant.
-        if (sp.participantIds.includes('me')) {
-          map.set(sp.payerId, (map.get(sp.payerId) ?? 0) - share)
-        }
+      } else if (sp.participantIds.includes('me')) {
+        map.set(sp.payerId, (map.get(sp.payerId) ?? 0) - share)
       }
     }
     return map

@@ -1,82 +1,79 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Check, UserPlus, X } from 'lucide-react'
 import { useCurrency } from '@/lib/currency'
 import { localISODate } from '@/lib/utils'
 import type { Contact, Split } from '@/lib/hooks/useSplits'
 
+export interface SplitDraft {
+  amount: string
+  note: string
+  payerId: string
+  participants: string[]   // includes 'me'
+}
+
+export const EMPTY_DRAFT: SplitDraft = {
+  amount: '', note: '', payerId: 'me', participants: ['me'],
+}
+
 interface Props {
   open: boolean
   onClose: () => void
   contacts: Contact[]
   meName: string
-  onSave: (sp: Omit<Split, 'id' | 'createdAt'>) => void
+  onSave: (sp: Omit<Split, 'id' | 'createdAt'>) => Promise<unknown> | void
   onAddContact: () => void
-  /** Toggle this contact id on the next mount of the participants list. */
-  preSelectId?: string | null
-  onConsumePreSelect?: () => void
+  /** Controlled draft — owned by the parent so it survives sheet remounts. */
+  draft: SplitDraft
+  onDraftChange: (d: SplitDraft) => void
 }
 
-export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddContact, preSelectId, onConsumePreSelect }: Props) {
+export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddContact, draft, onDraftChange }: Props) {
   const { currency } = useCurrency()
-  const [amount, setAmount] = useState('')
-  const [note, setNote] = useState('')
-  const [payerId, setPayerId] = useState('me')
-  const [participants, setParticipants] = useState<Set<string>>(new Set(['me']))
+  const { amount, note, payerId, participants } = draft
+  const participantSet = useMemo(() => new Set(participants), [participants])
 
-  useEffect(() => {
-    if (open && !preSelectId) {
-      setAmount(''); setNote(''); setPayerId('me'); setParticipants(new Set(['me']))
-    }
-  }, [open, preSelectId])
+  const setAmount = (v: string) => onDraftChange({ ...draft, amount: v })
+  const setNote = (v: string) => onDraftChange({ ...draft, note: v })
 
-  // When returning from "Add Person", preserve form state and toggle the new contact on.
-  useEffect(() => {
-    if (open && preSelectId) {
-      setParticipants(prev => {
-        const next = new Set(prev)
-        next.add(preSelectId)
-        return next
-      })
-      onConsumePreSelect?.()
-    }
-  }, [open, preSelectId, onConsumePreSelect])
-
-  const numeric = parseFloat(amount)
-  const valid = !Number.isNaN(numeric) && numeric > 0 && participants.size >= 2 && participants.has(payerId)
-
-  const share = useMemo(() => {
-    if (!valid) return 0
-    return numeric / participants.size
-  }, [valid, numeric, participants.size])
-
-  const toggle = (id: string) => {
-    setParticipants(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        if (id === payerId) return prev // payer must remain participant
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
+  const setPayer = (id: string) => {
+    const nextParticipants = participantSet.has(id) ? participants : [...participants, id]
+    onDraftChange({ ...draft, payerId: id, participants: nextParticipants })
   }
 
-  const submit = () => {
+  const numeric = parseFloat(amount)
+  const valid = !Number.isNaN(numeric) && numeric > 0 && participants.length >= 2 && participantSet.has(payerId)
+
+  const share = useMemo(() => valid ? numeric / participants.length : 0, [valid, numeric, participants.length])
+
+  const toggle = (id: string) => {
+    if (participantSet.has(id)) {
+      if (id === payerId) return // payer must remain participant
+      onDraftChange({ ...draft, participants: participants.filter(p => p !== id) })
+    } else {
+      onDraftChange({ ...draft, participants: [...participants, id] })
+    }
+  }
+
+  const submit = async () => {
     if (!valid) return
-    onSave({
+    await onSave({
       payerId,
-      participantIds: Array.from(participants),
+      participantIds: participants,
       totalAmount: numeric,
       note: note || undefined,
       date: localISODate(),
     })
+    onDraftChange(EMPTY_DRAFT)
     onClose()
   }
 
-  const allPeople: { id: string; name: string }[] = [{ id: 'me', name: meName }, ...contacts.map(c => ({ id: c.id, name: c.name }))]
+  type Person = { id: string; name: string }
+  const allPeople: Person[] = [
+    { id: 'me', name: meName },
+    ...contacts.map(c => ({ id: c.id, name: c.name })),
+  ]
 
   return (
     <Sheet open={open} onOpenChange={v => !v && onClose()}>
@@ -142,14 +139,7 @@ export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddCo
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => {
-                      setPayerId(p.id)
-                      setParticipants(prev => {
-                        const next = new Set(prev)
-                        next.add(p.id)
-                        return next
-                      })
-                    }}
+                    onClick={() => setPayer(p.id)}
                     style={{
                       padding: '8px 14px',
                       borderRadius: 999,
@@ -169,10 +159,10 @@ export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddCo
             </div>
           </Field>
 
-          <Field label={`Split between (${participants.size})`}>
+          <Field label={`Split between (${participants.length})`}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {allPeople.map(p => {
-                const checked = participants.has(p.id)
+                const checked = participantSet.has(p.id)
                 return (
                   <label
                     key={p.id}
@@ -193,7 +183,7 @@ export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddCo
                       onChange={() => toggle(p.id)}
                       style={{ width: 18, height: 18, accentColor: '#D07850' }}
                     />
-                    <span style={{ flex: 1, fontSize: 14, color: '#1A1410', fontWeight: 500 }}>{p.name}</span>
+                    <span style={{ flex: 1, fontSize: 14, color: '#1A1410', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                     {checked && share > 0 && (
                       <span style={{ fontSize: 12, color: '#65574A', fontWeight: 700 }}>
                         {currency.symbol}{share.toFixed(2)}
