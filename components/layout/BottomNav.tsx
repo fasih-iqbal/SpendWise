@@ -19,6 +19,14 @@ export function BottomNav({ onAddExpense }: Props) {
   const pathname = usePathname()
 
   return (
+    /*
+     * position:fixed — sits above the page, always visible.
+     * IMPORTANT: no ancestor must have overflow:hidden or transform,
+     * otherwise WebKit clips/re-parents fixed elements.
+     *
+     * We center within the 500px column by using left:50% + translateX(-50%)
+     * which correctly aligns with the content column on all screen sizes.
+     */
     <nav
       style={{
         position: 'fixed',
@@ -27,20 +35,24 @@ export function BottomNav({ onAddExpense }: Props) {
         transform: 'translateX(-50%)',
         width: '100%',
         maxWidth: 500,
-        zIndex: 50,
-        background: '#fff',
-        borderTop: '1px solid rgba(0,0,0,0.07)',
+        zIndex: 100,
+        background: '#FFFFFF',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
+        boxShadow: '0 -6px 30px rgba(0,0,0,0.09)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
+        /* Top padding for the nav items themselves */
         paddingTop: 10,
-        /* Safe area: home indicator on iPhone X+ */
-        paddingBottom: 'env(safe-area-inset-bottom, 14px)',
-        /* Minimum touch target height above the home bar */
-        minHeight: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 4,
+        paddingRight: 4,
+        /*
+         * paddingBottom = home indicator safe area.
+         * env() falls back to 14px on devices without a home bar.
+         */
+        paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
       }}
       aria-label="Main navigation"
     >
@@ -48,7 +60,7 @@ export function BottomNav({ onAddExpense }: Props) {
         <NavItem key={item.href} {...item} active={pathname === item.href} />
       ))}
 
-      {/* FAB */}
+      {/* FAB — floats above the nav bar */}
       <motion.button
         onClick={onAddExpense}
         whileTap={{ scale: 0.95 }}
@@ -66,7 +78,10 @@ export function BottomNav({ onAddExpense }: Props) {
           border: '3px solid #fff',
           cursor: 'pointer',
           flexShrink: 0,
-          marginTop: -22,
+          /* Lift it above the nav bar */
+          marginTop: -24,
+          position: 'relative',
+          zIndex: 1,
         }}
         aria-label="Add expense"
       >
@@ -100,10 +115,11 @@ function NavItem({
         flexDirection: 'column',
         alignItems: 'center',
         gap: 3,
-        padding: '6px 16px',
-        minWidth: 56,
+        padding: '6px 14px 4px',
+        minWidth: 52,
         textDecoration: 'none',
         WebkitTapHighlightColor: 'transparent',
+        userSelect: 'none',
       }}
     >
       <Icon
@@ -117,6 +133,7 @@ function NavItem({
           color: active ? '#D07850' : '#A8998A',
           fontWeight: active ? 700 : 400,
           letterSpacing: active ? '0.01em' : 0,
+          whiteSpace: 'nowrap',
         }}
       >
         {label}

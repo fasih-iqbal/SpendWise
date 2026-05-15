@@ -16,53 +16,46 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
   const [showAddExpense, setShowAddExpense] = useState(false)
 
   return (
+    /*
+     * Root: plain flex row, NO overflow:hidden, NO height constraint.
+     * overflow:hidden on any ancestor will clip position:fixed children
+     * on iOS Safari/WebKit — this is the core bug we are fixing.
+     */
     <div
       style={{
         display: 'flex',
-        /* Use 100dvh so it respects the dynamic viewport on iOS Safari */
-        height: '100dvh',
+        minHeight: '100dvh',
         background: '#EDE4D8',
         fontFamily: 'var(--font-urbanist), sans-serif',
-        overflow: 'hidden',
       }}
     >
       <LockGate />
 
-      {/* Sidebar — desktop only, hidden via inline + Tailwind override */}
+      {/* Sidebar — desktop only */}
       <div style={{ width: 240, flexShrink: 0, display: 'none' }} className="lg:block">
         <Sidebar />
       </div>
 
-      {/* Main column */}
+      {/*
+       * Scrollable content column.
+       * paddingBottom = nav bar height (64px) + iOS home-bar (safe-area-inset-bottom) + gap (8px)
+       * We never set overflow:hidden here — the page itself scrolls naturally.
+       */}
       <div
         style={{
           flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
           maxWidth: 500,
           margin: '0 auto',
           width: '100%',
-          position: 'relative',
-          overflow: 'hidden',
+          paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 8px)',
         }}
       >
-        <main
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-            /* 64px nav height + safe-area home bar + a little breathing room */
-            paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 16px) + 16px)',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          {children}
-        </main>
+        {children}
+      </div>
 
-        {/* BottomNav rendered inside the column; the nav itself is position:fixed */}
-        <div className="lg:hidden">
-          <BottomNav onAddExpense={() => setShowAddExpense(true)} />
-        </div>
+      {/* BottomNav — mobile only, rendered outside any overflow container */}
+      <div className="lg:hidden">
+        <BottomNav onAddExpense={() => setShowAddExpense(true)} />
       </div>
 
       <AddExpenseSheet

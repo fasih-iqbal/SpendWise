@@ -41,10 +41,7 @@
     background-color: #EDE4D8;
     color: #1A1410;
     font-family: var(--font-urbanist), sans-serif;
-    /* iOS Safari: prevent bounce scroll on the body */
-    overscroll-behavior: none;
-    /* Smooth scrolling inertia on iOS */
-    -webkit-overflow-scrolling: touch;
+    /* Natural body scroll — do NOT set overflow:hidden here */
     min-height: 100dvh;
     min-height: -webkit-fill-available;
   }
