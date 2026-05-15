@@ -39,6 +39,33 @@ function parseChartDate(dateStr: string): Date {
     : new Date(dateStr);
 }
 
+function getDateRange(period: Period): { start: Date; end: Date } {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (period) {
+    case "Day":
+      return { start: today, end: today };
+    case "Week": {
+      const dow = today.getDay();
+      const start = new Date(today);
+      start.setDate(today.getDate() - dow);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return { start, end };
+    }
+    case "Month":
+      return {
+        start: new Date(today.getFullYear(), today.getMonth(), 1),
+        end: new Date(today.getFullYear(), today.getMonth() + 1, 0),
+      };
+    case "Year":
+      return {
+        start: new Date(today.getFullYear(), 0, 1),
+        end: new Date(today.getFullYear(), 11, 31),
+      };
+  }
+}
+
 function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -61,10 +88,11 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
 
   if (period === "Day") {
     // 24 hours broken into 6 blocks of 4h
+    const { start } = getDateRange("Day");
     const points: ChartPoint[] = [];
     for (let h = 0; h < 24; h += 4) {
       const label = `${String(h).padStart(2, "0")}:00`;
-      const todayIso = localISODate(today);
+      const todayIso = localISODate(start);
       const amount = expenses
         .filter((e) => {
           if (e.date !== todayIso) return false;
@@ -83,13 +111,11 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
 
   if (period === "Week") {
     // current week Mon–Sun (7 days)
-    const dow = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((dow + 6) % 7));
+    const { start } = getDateRange("Week");
     const points: ChartPoint[] = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
       const iso = localISODate(d);
       const amount = expenses
         .filter((e) => e.date === iso)
@@ -101,18 +127,23 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
 
   if (period === "Month") {
     // last 4 weeks (28 days) shown as 4 weekly buckets
+    const { start, end } = getDateRange("Month");
+    const monthStart = new Date(start);
     const points: ChartPoint[] = [];
-    for (let w = 3; w >= 0; w--) {
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - w * 7 - 6);
-      const weekEnd = new Date(today);
-      weekEnd.setDate(today.getDate() - w * 7);
+    for (let w = 0; w < 4; w++) {
+      const weekStart = new Date(monthStart);
+      weekStart.setDate(monthStart.getDate() + w * 7);
+      const weekEnd = w < 3 ? new Date(weekStart) : new Date(end);
+      if (w < 3) weekEnd.setDate(weekStart.getDate() + 6);
       const isoStart = localISODate(weekStart);
       const isoEnd = localISODate(weekEnd);
       const amount = expenses
-        .filter((e) => e.date >= isoStart && e.date <= isoEnd)
+        .filter((e) => {
+          const d = parseLocalDate(e.date);
+          return d >= weekStart && d <= weekEnd;
+        })
         .reduce((s, e) => s + Number(e.amount), 0);
-      const label = `W${4 - w}`;
+      const label = `W${w + 1}`;
       points.push({ label, date: isoStart, amount });
     }
     return points;
@@ -149,8 +180,7 @@ export function WeeklyChart({ expenses }: Props) {
   const defaultSelected = useMemo(() => {
     if (activePeriod === "Week") {
       const today = new Date();
-      const dow = today.getDay();
-      return (dow + 6) % 7; // Mon=0
+      return today.getDay(); // Sun=0
     }
     if (activePeriod === "Day") return 0;
     if (activePeriod === "Month") return 3;
@@ -326,7 +356,7 @@ export function WeeklyChart({ expenses }: Props) {
           marginBottom: 4,
         }}
       >
-        <div
+        {/* <div
           style={{
             width: 30,
             height: 30,
@@ -338,8 +368,8 @@ export function WeeklyChart({ expenses }: Props) {
             flexShrink: 0,
           }}
         >
-          {/* <span style={{ color: '#fff', fontWeight: 700, fontSize: 12 }}>{currency.symbol}</span> */}
-        </div>
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 12 }}>{currency.symbol}</span>
+        </div> */}
         <p style={{ fontWeight: 700, fontSize: 18, color: "#D07850" }}>
           -{format(sel.val, { decimals: 2 })}
         </p>
