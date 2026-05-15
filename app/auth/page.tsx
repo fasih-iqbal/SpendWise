@@ -55,7 +55,7 @@ function AuthForm() {
         try {
           localStorage.setItem("spendwise-onboarded", "1");
         } catch {}
-        router.push("/setup");
+        router.push("/pin?mode=set");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");

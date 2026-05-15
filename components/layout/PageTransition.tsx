@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
  *
  * Bottom-nav tabs are siblings: Home → Transactions → Analytics → Profile.
  * Switching tabs slides horizontally in the direction of the index delta.
- * Routes outside the tab set (/splits, /setup, ...) slide in from the right
+ * Routes outside the tab set (/splits, /pin, ...) slide in from the right
  * on push and out to the right on back, matching iOS-style stack semantics.
  */
 
