@@ -89,8 +89,9 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
           borderTopRightRadius: 28,
           padding: 0,
           gap: 0,
-          height: '92dvh',
-          maxHeight: '92dvh',
+          /* Use svh so Safari's dynamic toolbar doesn't eat the sheet */
+          height: '92svh',
+          maxHeight: '92svh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -133,13 +134,15 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
           />
         </div>
 
-        {/* Fixed bottom: numpad + save */}
+        {/* Fixed bottom: numpad + save button + safe-area spacer */}
         <div
           style={{
             flexShrink: 0,
-            padding: '10px 20px calc(env(safe-area-inset-bottom) + 22px)',
+            padding: '10px 20px 0',
             background: '#F5EFE8',
             borderTop: '1px solid rgba(0,0,0,0.04)',
+            /* Lift everything above the iOS home bar */
+            paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
           }}
         >
           <NumPad onKey={handleKey} />

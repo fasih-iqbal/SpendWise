@@ -96,7 +96,11 @@ function PinScreen() {
         fontFamily: 'var(--font-urbanist), sans-serif',
         display: 'flex',
         flexDirection: 'column',
-        padding: '24px 20px calc(env(safe-area-inset-bottom) + 24px)',
+        /* top padding respects notch, bottom padding respects home bar */
+        paddingTop: 'max(24px, env(safe-area-inset-top))',
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 0,
         maxWidth: 430,
         margin: '0 auto',
       }}
@@ -164,6 +168,9 @@ function PinScreen() {
       </div>
 
       <NumPad onKey={onKey} disabled={working} />
+
+      {/* Safe-area spacer — pushes numpad above home bar on iPhone */}
+      <div style={{ height: 'max(20px, env(safe-area-inset-bottom))' }} />
     </div>
   )
 }
