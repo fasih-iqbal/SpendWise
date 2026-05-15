@@ -37,7 +37,7 @@ export function BottomNav({ onAddExpense, hidden = false }: Props) {
              */
             left: 16,
             right: 16,
-            zIndex: 100,
+            zIndex: 30,
             background: '#FFFFFF',
             borderRadius: 28,
             border: '1px solid rgba(0,0,0,0.07)',

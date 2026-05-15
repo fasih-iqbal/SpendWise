@@ -13,9 +13,11 @@ interface Props {
   onExpenseAdded?: () => void
   /** Remaining budget for current month — used to warn before going over. */
   remaining?: number
+  /** Force-hide the mobile bottom nav (e.g. while a custom sheet is open on a child page). */
+  hideBottomNav?: boolean
 }
 
-export function AppShell({ children, userName, userId, onExpenseAdded, remaining }: Props) {
+export function AppShell({ children, userName, userId, onExpenseAdded, remaining, hideBottomNav }: Props) {
   const [showAddExpense, setShowAddExpense] = useState(false)
 
   return (
@@ -60,7 +62,7 @@ export function AppShell({ children, userName, userId, onExpenseAdded, remaining
       <div className="lg:hidden">
         <BottomNav
           onAddExpense={() => setShowAddExpense(true)}
-          hidden={showAddExpense}
+          hidden={showAddExpense || !!hideBottomNav}
         />
       </div>
 

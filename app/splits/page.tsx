@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Plus, Trash2, Receipt, UserPlus, Users } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, Receipt, UserPlus, Users, History } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { AddSplitSheet } from '@/components/splits/AddSplitSheet'
 import { AddContactSheet } from '@/components/splits/AddContactSheet'
@@ -20,11 +20,14 @@ export default function SplitsPage() {
 
   const [openSplit, setOpenSplit] = useState(false)
   const [openContact, setOpenContact] = useState(false)
+  /** When set, reopen split sheet after contact is added and pre-toggle this id. */
+  const returnToSplitRef = useRef(false)
+  const [pendingPreSelect, setPendingPreSelect] = useState<string | null>(null)
 
   const meName = user?.name || 'You'
 
   return (
-    <AppShell userId={user?.id} userName={user?.name}>
+    <AppShell userId={user?.id} userName={user?.name} hideBottomNav={openSplit || openContact}>
       <div style={{ height: 'max(24px, env(safe-area-inset-top))', background: '#EDE4D8' }} />
 
       {/* Header */}
@@ -180,7 +183,7 @@ export default function SplitsPage() {
       </Section>
 
       {/* Splits */}
-      <Section title="Recent Splits" icon={<Receipt size={14} />}>
+      <Section title="Recent Splits" icon={<History size={14} />}>
         {splits.length === 0 ? (
           <Empty hint="Splits you create show up here." />
         ) : (
@@ -238,12 +241,29 @@ export default function SplitsPage() {
         contacts={contacts}
         meName={meName}
         onSave={addSplit}
-        onAddContact={() => { setOpenSplit(false); setOpenContact(true) }}
+        preSelectId={pendingPreSelect}
+        onConsumePreSelect={() => setPendingPreSelect(null)}
+        onAddContact={() => {
+          returnToSplitRef.current = true
+          setOpenSplit(false)
+          setOpenContact(true)
+        }}
       />
       <AddContactSheet
         open={openContact}
-        onClose={() => setOpenContact(false)}
-        onAdd={addContact}
+        onClose={() => {
+          setOpenContact(false)
+          if (returnToSplitRef.current) {
+            returnToSplitRef.current = false
+            // Reopen split sheet on next tick so the contact list re-renders fresh
+            setTimeout(() => setOpenSplit(true), 60)
+          }
+        }}
+        onAdd={(name) => {
+          const c = addContact(name)
+          if (returnToSplitRef.current) setPendingPreSelect(c.id)
+          return c.id
+        }}
       />
     </AppShell>
   )

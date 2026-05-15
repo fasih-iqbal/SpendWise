@@ -13,9 +13,12 @@ interface Props {
   meName: string
   onSave: (sp: Omit<Split, 'id' | 'createdAt'>) => void
   onAddContact: () => void
+  /** Toggle this contact id on the next mount of the participants list. */
+  preSelectId?: string | null
+  onConsumePreSelect?: () => void
 }
 
-export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddContact }: Props) {
+export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddContact, preSelectId, onConsumePreSelect }: Props) {
   const { currency } = useCurrency()
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
@@ -23,10 +26,22 @@ export function AddSplitSheet({ open, onClose, contacts, meName, onSave, onAddCo
   const [participants, setParticipants] = useState<Set<string>>(new Set(['me']))
 
   useEffect(() => {
-    if (open) {
+    if (open && !preSelectId) {
       setAmount(''); setNote(''); setPayerId('me'); setParticipants(new Set(['me']))
     }
-  }, [open])
+  }, [open, preSelectId])
+
+  // When returning from "Add Person", preserve form state and toggle the new contact on.
+  useEffect(() => {
+    if (open && preSelectId) {
+      setParticipants(prev => {
+        const next = new Set(prev)
+        next.add(preSelectId)
+        return next
+      })
+      onConsumePreSelect?.()
+    }
+  }, [open, preSelectId, onConsumePreSelect])
 
   const numeric = parseFloat(amount)
   const valid = !Number.isNaN(numeric) && numeric > 0 && participants.size >= 2 && participants.has(payerId)

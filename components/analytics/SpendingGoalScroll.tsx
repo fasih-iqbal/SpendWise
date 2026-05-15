@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import type { SpendingCategory } from '@/lib/types'
@@ -7,10 +6,12 @@ import type { SpendingCategory } from '@/lib/types'
 interface Props {
   categories: SpendingCategory[]
   onCreateNew?: () => void
+  /** Controlled selection — when provided, the parent owns selection state. */
+  selected?: string | null
+  onSelectChange?: (id: string | null) => void
 }
 
-export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
-  const [selected, setSelected] = useState<string | null>(null)
+export function SpendingGoalScroll({ categories, onCreateNew, selected = null, onSelectChange }: Props) {
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -68,7 +69,7 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
             <motion.button
               key={cat.id}
               type="button"
-              onClick={() => setSelected(isActive ? null : cat.id)}
+              onClick={() => onSelectChange?.(isActive ? null : cat.id)}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}

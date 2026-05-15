@@ -17,10 +17,19 @@ export default function AnalyticsPage() {
   const { categories, addCategory, updateCategory, removeCategory } = useCategories(user?.id)
   const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0)
   const [openAddCat, setOpenAddCat] = useState(false)
+  const [selectedCat, setSelectedCat] = useState<string | null>(null)
 
   const rawExpenses = useMemo(
-    () => expenses.map(e => ({ date: e.date, amount: e.amount, category_id: e.category_id })),
-    [expenses],
+    () => {
+      const filtered = selectedCat ? expenses.filter(e => e.category_id === selectedCat) : expenses
+      return filtered.map(e => ({ date: e.date, amount: e.amount, category_id: e.category_id }))
+    },
+    [expenses, selectedCat],
+  )
+
+  const selectedCatDef = useMemo(
+    () => selectedCat ? categories.find(c => c.id === selectedCat) ?? null : null,
+    [selectedCat, categories],
   )
 
   const categoryDefs = useMemo(
@@ -53,12 +62,14 @@ export default function AnalyticsPage() {
         <DonutChart
           rawExpenses={rawExpenses}
           categories={categoryDefs}
-          title="My Expenses"
+          title={selectedCatDef ? `${selectedCatDef.emoji} ${selectedCatDef.name}` : 'My Expenses'}
         />
       )}
       {spendingCats.length > 0 && (
         <SpendingGoalScroll
           categories={spendingCats}
+          selected={selectedCat}
+          onSelectChange={setSelectedCat}
           onCreateNew={() => setOpenAddCat(true)}
         />
       )}

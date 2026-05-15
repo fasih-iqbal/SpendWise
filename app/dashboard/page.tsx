@@ -7,7 +7,8 @@ import { WeeklyChart } from '@/components/dashboard/WeeklyChart'
 import { TransactionList } from '@/components/dashboard/TransactionList'
 import { SkeletonCard } from '@/components/ui/SkeletonCard'
 import { BudgetSheet } from '@/components/profile/BudgetSheet'
-import { Wallet } from 'lucide-react'
+import { Wallet, Users } from 'lucide-react'
+import Link from 'next/link'
 import { useUser } from '@/lib/user-context'
 import { useExpenses } from '@/lib/hooks/useExpenses'
 import { useCategories } from '@/lib/hooks/useCategories'
@@ -43,7 +44,33 @@ export default function DashboardPage() {
 
   return (
     <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refreshExp} remaining={stats.totalRemaining}>
-      <Header userName={user?.name ?? 'there'} avatarUrl={user?.avatar_url} />
+      <Header
+        userName={user?.name ?? 'there'}
+        avatarUrl={user?.avatar_url}
+        rightSlot={
+          <Link
+            href="/splits"
+            prefetch
+            aria-label="Split bills"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 14,
+              background: '#fff',
+              border: '1px solid rgba(0,0,0,0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              color: '#1A1410',
+              textDecoration: 'none',
+              position: 'relative',
+            }}
+          >
+            <Users size={18} color="#5078A8" strokeWidth={2} />
+          </Link>
+        }
+      />
       <ExpenseHeroCard
         availableCredit={Math.max(0, stats.totalRemaining)}
         cardLastFour={cardLastFour}

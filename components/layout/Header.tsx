@@ -7,9 +7,11 @@ interface Props {
   avatarUrl?: string;
   /** 'minimal' = no greeting, no username, no currency, no avatar */
   variant?: 'default' | 'minimal';
+  /** Optional content rendered on the right (icons, shortcuts). */
+  rightSlot?: React.ReactNode;
 }
 
-export function Header({ userName = "there", avatarUrl, variant = 'default' }: Props) {
+export function Header({ userName = "there", avatarUrl, variant = 'default', rightSlot }: Props) {
   const [greeting, setGreeting] = useState("");
   const [emoji, setEmoji] = useState("");
 
@@ -83,6 +85,11 @@ export function Header({ userName = "there", avatarUrl, variant = 'default' }: P
           Welcome, <span style={{ fontWeight: 800 }}>{userName}</span>
         </h1>
       </div>
+      {rightSlot && (
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {rightSlot}
+        </div>
+      )}
     </header>
   );
 }
