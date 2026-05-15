@@ -36,6 +36,7 @@ export default function OnboardingPage() {
   const router = useRouter()
 
   const isLast = screen === SCREENS.length - 1
+  const isFirst = screen === 0
 
   const goNext = () => {
     if (!isLast) { setDir(1); setScreen(s => s + 1) }
@@ -65,14 +66,14 @@ export default function OnboardingPage() {
         overflow: 'hidden',
       }}
     >
-      {/* Hero illustration */}
+      {/* Hero: Logo + brand instead of image */}
       <motion.div
         drag="x"
         dragElastic={0.18}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={onDragEnd}
         style={{
-          marginTop: 'max(24px, env(safe-area-inset-top))',
+          marginTop: 'max(40px, env(safe-area-inset-top))',
           display: 'flex',
           justifyContent: 'center',
           cursor: 'grab',
@@ -85,19 +86,62 @@ export default function OnboardingPage() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           style={{
             width: '100%',
-            maxWidth: 360,
-            aspectRatio: '1 / 1',
-            position: 'relative',
+            maxWidth: 340,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+            padding: '36px 0 28px',
+            background: 'rgba(255,255,255,0.55)',
+            borderRadius: 28,
+            border: '1px solid rgba(255,255,255,0.9)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
           }}
         >
-          <Image
-            src="/icons/Welcome.png"
-            alt="Welcome to SpendWise"
-            fill
-            priority
-            sizes="(max-width: 430px) 100vw, 360px"
-            style={{ objectFit: 'contain' }}
-          />
+          {/* Logo icon */}
+          <div
+            style={{
+              width: 90,
+              height: 90,
+              borderRadius: 26,
+              overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            }}
+          >
+            <Image
+              src="/icons/logo-192.png"
+              alt="SpendWise"
+              width={90}
+              height={90}
+              priority
+              style={{ objectFit: 'cover', borderRadius: 26, display: 'block' }}
+            />
+          </div>
+
+          {/* Brand name */}
+          <p
+            style={{
+              fontWeight: 800,
+              fontSize: 30,
+              color: '#1A1410',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+            }}
+          >
+            SpendWise
+          </p>
+
+          {/* Tagline */}
+          <p
+            style={{
+              fontSize: 13,
+              color: '#A8998A',
+              fontWeight: 500,
+              letterSpacing: '0.01em',
+            }}
+          >
+            Budget tracking redefined
+          </p>
         </motion.div>
       </motion.div>
 
@@ -106,7 +150,7 @@ export default function OnboardingPage() {
         dragElastic={0.18}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={onDragEnd}
-        style={{ marginTop: 18, flex: 1, display: 'flex', flexDirection: 'column', cursor: 'grab' }}
+        style={{ marginTop: 28, flex: 1, display: 'flex', flexDirection: 'column', cursor: 'grab' }}
       >
         <AnimatePresence mode="wait" custom={dir}>
           <motion.div
@@ -173,7 +217,7 @@ export default function OnboardingPage() {
         ))}
       </div>
 
-      {/* CTA row */}
+      {/* CTA row — full-width Next on first slide, back+next on middle slides, Get Started on last */}
       {isLast ? (
         <motion.button
           type="button"
@@ -200,12 +244,39 @@ export default function OnboardingPage() {
           Get Started
           <ArrowRight size={18} />
         </motion.button>
+      ) : isFirst ? (
+        /* First slide: full-width Next button, no back arrow */
+        <motion.button
+          type="button"
+          onClick={goNext}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            width: '100%',
+            height: 56,
+            borderRadius: 999,
+            background: '#D07850',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontWeight: 700,
+            fontSize: 15,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            boxShadow: '0 8px 24px rgba(208,120,80,0.32)',
+          }}
+        >
+          Next
+          <ChevronRight size={20} />
+        </motion.button>
       ) : (
+        /* Middle slides: back + next */
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <motion.button
             type="button"
             onClick={goPrev}
-            disabled={screen === 0}
             whileTap={{ scale: 0.94 }}
             style={{
               width: 56,
@@ -213,11 +284,10 @@ export default function OnboardingPage() {
               borderRadius: '50%',
               background: '#fff',
               border: '1px solid rgba(0,0,0,0.08)',
-              cursor: screen === 0 ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: screen === 0 ? 0.4 : 1,
               boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
               flexShrink: 0,
             }}

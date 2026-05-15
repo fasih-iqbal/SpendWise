@@ -18,14 +18,16 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
   return (
     <div style={{ display: 'flex', minHeight: '100dvh', background: '#EDE4D8', fontFamily: 'var(--font-urbanist), sans-serif' }}>
       <LockGate />
-      <div className="hidden lg:block" style={{ width: 240, flexShrink: 0 }}>
+      {/* Sidebar — desktop only, not rendered in DOM on mobile */}
+      <div style={{ width: 240, flexShrink: 0, display: 'none' }} className="lg:block">
         <Sidebar />
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 500, margin: '0 auto', width: '100%', position: 'relative' }}>
-        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 'calc(env(safe-area-inset-bottom) + 110px)' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 500, margin: '0 auto', width: '100%', position: 'relative', willChange: 'transform' }}>
+        <main style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', paddingBottom: 'calc(env(safe-area-inset-bottom) + 110px)' }}>
           {children}
         </main>
-        <div className="lg:hidden">
+        {/* BottomNav — mobile only */}
+        <div style={{ display: 'block' }} className="lg:hidden">
           <BottomNav onAddExpense={() => setShowAddExpense(true)} />
         </div>
       </div>

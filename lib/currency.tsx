@@ -22,12 +22,29 @@ interface Ctx {
 const STORAGE_KEY = 'spendwise-currency'
 const CurrencyContext = createContext<Ctx | null>(null)
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [code, setCode] = useState('USD')
+/** Read localStorage synchronously so there is NO flash of the wrong currency. */
+function readStoredCode(): string {
+  if (typeof window === 'undefined') return 'USD'
+  try {
+    const v = localStorage.getItem(STORAGE_KEY)
+    if (v && CURRENCIES.some(c => c.code === v)) return v
+  } catch {}
+  return 'USD'
+}
 
+export function CurrencyProvider({ children }: { children: ReactNode }) {
+  // Lazy initialiser — runs synchronously on first render, no useEffect flash
+  const [code, setCode] = useState<string>(readStoredCode)
+
+  // Also respond to storage events from other tabs
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && CURRENCIES.some(c => c.code === stored)) setCode(stored)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue && CURRENCIES.some(c => c.code === e.newValue)) {
+        setCode(e.newValue)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   const currency = CURRENCIES.find(c => c.code === code) ?? CURRENCIES[0]

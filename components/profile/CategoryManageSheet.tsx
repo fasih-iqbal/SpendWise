@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import React from 'react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Plus, Trash2, Pencil, X, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -13,16 +14,28 @@ interface Props {
   onAdd: (c: { name: string; emoji: string; color: string; budget_limit?: number }) => Promise<void> | void
   onUpdate: (id: string, patch: { name?: string; emoji?: string; color?: string; budget_limit?: number }) => Promise<void> | void
   onRemove: (id: string) => Promise<void> | void
+  /** Open directly in 'add' form instead of list */
+  initialMode?: 'list' | 'add'
 }
 
-export function CategoryManageSheet({ open, onClose, categories, onAdd, onUpdate, onRemove }: Props) {
-  const [mode, setMode] = useState<'list' | 'add' | 'edit'>('list')
+export function CategoryManageSheet({ open, onClose, categories, onAdd, onUpdate, onRemove, initialMode = 'list' }: Props) {
+  const [mode, setMode] = useState<'list' | 'add' | 'edit'>(initialMode)
   const [editing, setEditing] = useState<Category | null>(null)
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState(EMOJI_OPTIONS[0])
   const [color, setColor] = useState(COLOR_OPTIONS[0])
   const [budget, setBudget] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // Sync mode when sheet re-opens with a different initialMode
+  const prevOpen = React.useRef(false)
+  React.useEffect(() => {
+    if (open && !prevOpen.current) {
+      setMode(initialMode)
+      resetForm()
+    }
+    prevOpen.current = open
+  }, [open, initialMode])
 
   const resetForm = () => {
     setName(''); setEmoji(EMOJI_OPTIONS[0]); setColor(COLOR_OPTIONS[0]); setBudget(''); setEditing(null)

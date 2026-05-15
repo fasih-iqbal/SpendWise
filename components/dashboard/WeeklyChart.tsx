@@ -106,7 +106,7 @@ function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
 }
 
 export function WeeklyChart({ expenses }: Props) {
-  const { format } = useCurrency()
+  const { format, currency } = useCurrency()
   const [activePeriod, setActivePeriod] = useState<Period>('Week')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -270,7 +270,7 @@ export function WeeklyChart({ expenses }: Props) {
       {/* Highlighted amount */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
         <div style={{ width: 30, height: 30, borderRadius: 10, background: '#D07850', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>$</span>
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 12 }}>{currency.symbol}</span>
         </div>
         <p style={{ fontWeight: 700, fontSize: 18, color: '#D07850' }}>
           -{format(sel.val, { decimals: 2 })}

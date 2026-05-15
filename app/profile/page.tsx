@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, LogOut } from 'lucide-react'
+import { LogOut, Wallet, TrendingDown, PiggyBank, Tags, Plus } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { SettingsCard } from '@/components/profile/SettingsCard'
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const { expenses } = useExpenses(user?.id)
   const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0)
   const [openCats, setOpenCats] = useState(false)
+  const [catInitialMode, setCatInitialMode] = useState<'list' | 'add'>('list')
   const [signing, setSigning] = useState(false)
 
   const handleSignOut = async () => {
@@ -31,38 +32,13 @@ export default function ProfilePage() {
     router.replace('/auth')
   }
 
+  const openManage = () => { setCatInitialMode('list'); setOpenCats(true) }
+  const openAdd = () => { setCatInitialMode('add'); setOpenCats(true) }
+
   return (
     <AppShell>
-      {/* Minimal profile-only header (no greeting / no currency / no avatar — already on page) */}
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '18px 20px 8px',
-          background: '#EDE4D8',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => router.back()}
-          style={{
-            width: 38, height: 38, borderRadius: '50%',
-            background: '#fff', border: '1px solid rgba(0,0,0,0.07)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-          }}
-          aria-label="Back"
-        >
-          <ChevronLeft size={20} color="#1A1410" />
-        </button>
-        <h1 style={{ flex: 1, fontWeight: 700, fontSize: 20, color: '#1A1410' }}>
-          Profile
-        </h1>
-      </header>
+      {/* Clean header — no back button, no title text */}
+      <div style={{ height: 'max(24px, env(safe-area-inset-top))', background: '#EDE4D8' }} />
 
       <div style={{ paddingTop: 4 }}>
         <ProfileHeader
@@ -86,17 +62,37 @@ export default function ProfilePage() {
         <SettingsCard
           title="Budget"
           items={[
-            { icon: '💰', label: 'Monthly Budget', value: format(user?.monthly_budget ?? 0, { decimals: 0 }) },
-            { icon: '📈', label: 'This Month Spent', value: format(stats.totalSpent, { decimals: 0 }) },
-            { icon: '🎯', label: 'Remaining', value: format(stats.totalRemaining, { decimals: 0 }) },
+            {
+              icon: <Wallet size={18} color="#C9A830" strokeWidth={2} />,
+              label: 'Monthly Budget',
+              value: format(user?.monthly_budget ?? 0, { decimals: 0 }),
+            },
+            {
+              icon: <TrendingDown size={18} color="#D07850" strokeWidth={2} />,
+              label: 'This Month Spent',
+              value: format(stats.totalSpent, { decimals: 0 }),
+            },
+            {
+              icon: <PiggyBank size={18} color="#2C6A49" strokeWidth={2} />,
+              label: 'Remaining',
+              value: format(stats.totalRemaining, { decimals: 0 }),
+            },
           ]}
         />
 
         <SettingsCard
           title="Categories"
           items={[
-            { icon: '🏷️', label: `Manage Categories (${categories.length})`, onClick: () => setOpenCats(true) },
-            { icon: '➕', label: 'Add Category', onClick: () => setOpenCats(true) },
+            {
+              icon: <Tags size={18} color="#65574A" strokeWidth={2} />,
+              label: `Manage Categories (${categories.length})`,
+              onClick: openManage,
+            },
+            {
+              icon: <Plus size={18} color="#D07850" strokeWidth={2} />,
+              label: 'Add Category',
+              onClick: openAdd,
+            },
           ]}
         />
 
@@ -145,6 +141,7 @@ export default function ProfilePage() {
         open={openCats}
         onClose={() => setOpenCats(false)}
         categories={categories}
+        initialMode={catInitialMode}
         onAdd={async c => { await addCategory(c) }}
         onUpdate={async (id, p) => { await updateCategory(id, p) }}
         onRemove={async id => { await removeCategory(id) }}
