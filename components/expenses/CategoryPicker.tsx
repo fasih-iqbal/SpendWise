@@ -18,7 +18,14 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
           No categories yet. Add one from Profile → Categories.
         </p>
       )}
-      <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 12,
+          paddingBottom: 4,
+        }}
+      >
         {categories.map(cat => {
           const isSelected = selected === cat.id
           return (
@@ -27,16 +34,15 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(cat.id)}
               style={{
-                flexShrink: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 5,
-                width: 60,
                 cursor: 'pointer',
                 background: 'none',
                 border: 'none',
                 padding: 0,
+                minWidth: 0,
               }}
             >
               <div
@@ -56,7 +62,17 @@ export function CategoryPicker({ categories, selected, onSelect }: Props) {
               >
                 {cat.emoji}
               </div>
-              <span style={{ fontSize: 10, color: isSelected ? cat.color : '#A8998A', whiteSpace: 'nowrap', fontWeight: isSelected ? 600 : 400 }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  color: isSelected ? cat.color : '#A8998A',
+                  fontWeight: isSelected ? 600 : 400,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '100%',
+                }}
+              >
                 {cat.name}
               </span>
             </button>

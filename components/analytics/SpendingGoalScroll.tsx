@@ -18,11 +18,10 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
         Your Spending Goal
       </p>
       <div
-        className="scrollbar-none"
         style={{
-          display: 'flex',
-          gap: 18,
-          overflowX: 'auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 14,
           padding: '0 20px 6px',
         }}
       >
@@ -31,7 +30,6 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
           type="button"
           onClick={onCreateNew}
           style={{
-            flexShrink: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -41,7 +39,7 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
             cursor: 'pointer',
             padding: 0,
             fontFamily: 'inherit',
-            minWidth: 56,
+            minWidth: 0,
           }}
           aria-label="Create new spending goal"
         >
@@ -73,10 +71,9 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
               onClick={() => setSelected(isActive ? null : cat.id)}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.04 }}
               whileTap={{ scale: 0.94 }}
               style={{
-                flexShrink: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -86,7 +83,7 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
                 cursor: 'pointer',
                 padding: 0,
                 fontFamily: 'inherit',
-                minWidth: 56,
+                minWidth: 0,
               }}
             >
               <div
@@ -114,6 +111,9 @@ export function SpendingGoalScroll({ categories, onCreateNew }: Props) {
                   color: isActive ? cat.color : '#65574A',
                   fontWeight: isActive ? 700 : 500,
                   whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '100%',
                 }}
               >
                 {cat.name}

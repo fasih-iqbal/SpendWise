@@ -1,12 +1,13 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Wallet, TrendingDown, PiggyBank, Tags, Plus, KeyRound, ShieldOff } from 'lucide-react'
+import { LogOut, Wallet, TrendingDown, PiggyBank, Tags, Plus, KeyRound, ShieldOff, Users } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { SettingsCard } from '@/components/profile/SettingsCard'
 import { CurrencyPicker } from '@/components/ui/CurrencyPicker'
 import { CategoryManageSheet } from '@/components/profile/CategoryManageSheet'
+import { BudgetSheet } from '@/components/profile/BudgetSheet'
 import { useCurrency } from '@/lib/currency'
 import { useUser } from '@/lib/user-context'
 import { useCategories } from '@/lib/hooks/useCategories'
@@ -17,12 +18,13 @@ import { clearPin, lockNow } from '@/lib/pin'
 export default function ProfilePage() {
   const router = useRouter()
   const { format, currency } = useCurrency()
-  const { user, signOut } = useUser()
+  const { user, signOut, refresh: refreshUser } = useUser()
   const { categories, addCategory, updateCategory, removeCategory } = useCategories(user?.id)
   const { expenses } = useExpenses(user?.id)
   const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0)
   const [openCats, setOpenCats] = useState(false)
   const [catInitialMode, setCatInitialMode] = useState<'list' | 'add'>('list')
+  const [openBudget, setOpenBudget] = useState(false)
   const [signing, setSigning] = useState(false)
 
   const handleSignOut = async () => {
@@ -64,8 +66,9 @@ export default function ProfilePage() {
           items={[
             {
               icon: <Wallet size={18} color="#C9A830" strokeWidth={2} />,
-              label: 'Monthly Budget',
-              value: format(user?.monthly_budget ?? 0, { decimals: 0 }),
+              label: user?.monthly_budget ? 'Monthly Budget' : 'Set Monthly Budget',
+              value: user?.monthly_budget ? format(user.monthly_budget, { decimals: 0 }) : 'Tap to set',
+              onClick: () => setOpenBudget(true),
             },
             {
               icon: <TrendingDown size={18} color="#D07850" strokeWidth={2} />,
@@ -76,6 +79,17 @@ export default function ProfilePage() {
               icon: <PiggyBank size={18} color="#2C6A49" strokeWidth={2} />,
               label: 'Remaining',
               value: format(stats.totalRemaining, { decimals: 0 }),
+            },
+          ]}
+        />
+
+        <SettingsCard
+          title="Bills"
+          items={[
+            {
+              icon: <Users size={18} color="#5078A8" strokeWidth={2} />,
+              label: 'Split Bills',
+              onClick: () => router.push('/splits'),
             },
           ]}
         />
@@ -136,6 +150,14 @@ export default function ProfilePage() {
           SpendWise · {currency.code} ({currency.symbol})
         </p>
       </div>
+
+      <BudgetSheet
+        open={openBudget}
+        onClose={() => setOpenBudget(false)}
+        userId={user?.id}
+        current={user?.monthly_budget ?? 0}
+        onSaved={() => { refreshUser() }}
+      />
 
       <CategoryManageSheet
         open={openCats}

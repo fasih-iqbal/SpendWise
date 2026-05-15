@@ -6,7 +6,7 @@ import { CategoryPicker } from './CategoryPicker'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrency } from '@/lib/currency'
 import { localISODate } from '@/lib/utils'
-import { Check } from 'lucide-react'
+import { Check, AlertTriangle } from 'lucide-react'
 import type { Category } from '@/lib/types'
 
 interface Props {
@@ -14,9 +14,11 @@ interface Props {
   onClose: () => void
   userId?: string
   onSaved?: () => void
+  /** Remaining monthly budget, used to warn the user before going negative. */
+  remaining?: number
 }
 
-export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
+export function AddExpenseSheet({ open, onClose, userId, onSaved, remaining }: Props) {
   const [amount, setAmount] = useState('0')
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [note, setNote] = useState('')
@@ -53,6 +55,14 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
   const handleSave = async () => {
     const num = parseFloat(amount)
     if (!num || !categoryId) return
+    // Guard: warn (and allow opting in) when expense would exceed remaining budget.
+    if (typeof remaining === 'number' && remaining - num < 0) {
+      const overBy = (num - remaining).toFixed(2)
+      const msg = remaining <= 0
+        ? `You have no budget left this month. This expense will push you ${overBy} over.\n\nAdd anyway?`
+        : `This expense exceeds your remaining budget by ${overBy}.\n\nAdd anyway?`
+      if (!confirm(msg)) return
+    }
     setSaving(true)
     try {
       if (userId) {
@@ -107,6 +117,28 @@ export function AddExpenseSheet({ open, onClose, userId, onSaved }: Props) {
             Add Expense
           </p>
           <AmountDisplayCompact amount={amount} />
+          {typeof remaining === 'number' && parseFloat(amount) > 0 && remaining - parseFloat(amount) < 0 && (
+            <div
+              style={{
+                margin: '0 20px 6px',
+                padding: '8px 12px',
+                background: '#FBE7D9',
+                border: '1px solid #D07850',
+                borderRadius: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                color: '#A85D3A',
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              <AlertTriangle size={14} />
+              {remaining <= 0
+                ? 'No budget left this month.'
+                : `Over budget by ${(parseFloat(amount) - remaining).toFixed(2)}.`}
+            </div>
+          )}
         </div>
 
         {/* Scrollable middle */}

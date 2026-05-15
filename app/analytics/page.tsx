@@ -9,11 +9,13 @@ import { CategoryManageSheet } from '@/components/profile/CategoryManageSheet'
 import { useUser } from '@/lib/user-context'
 import { useExpenses } from '@/lib/hooks/useExpenses'
 import { useCategories } from '@/lib/hooks/useCategories'
+import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
 
 export default function AnalyticsPage() {
   const { user, loading: userLoading } = useUser()
   const { expenses, loading: expLoading, refresh } = useExpenses(user?.id)
   const { categories, addCategory, updateCategory, removeCategory } = useCategories(user?.id)
+  const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0)
   const [openAddCat, setOpenAddCat] = useState(false)
 
   const rawExpenses = useMemo(
@@ -27,7 +29,7 @@ export default function AnalyticsPage() {
   )
 
   const spendingCats = useMemo(
-    () => categories.slice(0, 8).map(c => ({
+    () => categories.map(c => ({
       id: c.id, name: c.name, emoji: c.emoji, color: c.color,
     })),
     [categories],
@@ -43,7 +45,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refresh}>
+    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refresh} remaining={stats.totalRemaining}>
       <AnalyticsHeader title="Analytics" />
       {expLoading ? (
         <SkeletonCard height={260} />

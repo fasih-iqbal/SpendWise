@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
 import { LockGate } from './LockGate'
+import { PageTransition } from './PageTransition'
 import { AddExpenseSheet } from '@/components/expenses/AddExpenseSheet'
 
 interface Props {
@@ -10,9 +11,11 @@ interface Props {
   userName?: string
   userId?: string
   onExpenseAdded?: () => void
+  /** Remaining budget for current month — used to warn before going over. */
+  remaining?: number
 }
 
-export function AppShell({ children, userName, userId, onExpenseAdded }: Props) {
+export function AppShell({ children, userName, userId, onExpenseAdded, remaining }: Props) {
   const [showAddExpense, setShowAddExpense] = useState(false)
 
   return (
@@ -50,7 +53,7 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
           paddingBottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        {children}
+        <PageTransition>{children}</PageTransition>
       </div>
 
       {/* BottomNav — mobile only, hidden while Add Expense sheet is open */}
@@ -65,6 +68,7 @@ export function AppShell({ children, userName, userId, onExpenseAdded }: Props) 
         open={showAddExpense}
         onClose={() => setShowAddExpense(false)}
         userId={userId}
+        remaining={remaining}
         onSaved={() => { setShowAddExpense(false); onExpenseAdded?.() }}
       />
     </div>

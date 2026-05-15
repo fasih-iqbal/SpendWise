@@ -7,11 +7,13 @@ import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useUser } from "@/lib/user-context";
 import { useExpenses } from "@/lib/hooks/useExpenses";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { useDashboardStats } from "@/lib/hooks/useDashboardStats";
 
 export default function TransactionsPage() {
   const { user, loading: userLoading } = useUser();
   const { expenses, loading: expLoading, refresh } = useExpenses(user?.id);
   const { categories } = useCategories(user?.id);
+  const stats = useDashboardStats(expenses, user?.monthly_budget ?? 0);
 
   const sorted = useMemo(
     () =>
@@ -31,7 +33,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refresh}>
+    <AppShell userId={user?.id} userName={user?.name} onExpenseAdded={refresh} remaining={stats.totalRemaining}>
       <Header variant="minimal" />
       <div style={{ paddingTop: 4 }}>
         <h2

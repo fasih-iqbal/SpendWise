@@ -231,6 +231,18 @@ export function WeeklyChart({ expenses }: Props) {
     return () => ro.disconnect();
   }, []);
 
+  // Auto-scroll to current/default point so user does not have to scroll manually
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const stepXNow = data.length > 1
+      ? (Math.max(width, PADDING.left + PADDING.right + (data.length - 1) * MIN_STEP_X) - PADDING.left - PADDING.right) / (data.length - 1)
+      : 0;
+    const targetX = PADDING.left + defaultSelected * stepXNow;
+    const left = Math.max(0, targetX - el.clientWidth / 2);
+    el.scrollTo({ left, behavior: 'smooth' });
+  }, [activePeriod, defaultSelected, data.length, width]);
+
   if (data.length === 0) return null;
 
   const max = Math.max(...data.map((d) => d.amount)) * 1.15 || 1;
@@ -408,7 +420,13 @@ export function WeeklyChart({ expenses }: Props) {
       {/* Chart */}
       <div
         ref={containerRef}
-        style={{ position: "relative", width: "100%", height: HEIGHT, overflowX: "auto" }}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: HEIGHT + 8,
+          paddingBottom: 8,
+          overflowX: "auto",
+        }}
       >
         <svg
           key={activePeriod}
