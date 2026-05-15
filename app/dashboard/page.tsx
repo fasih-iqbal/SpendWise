@@ -47,7 +47,7 @@ export default function DashboardPage() {
         cardHolder={cardHolder}
         validThru={validThru}
       />
-      <WeeklyChart data={stats.weekly} />
+      <WeeklyChart expenses={expenses} />
       <TransactionList
         expenses={recent}
         categories={categories}

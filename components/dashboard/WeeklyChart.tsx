@@ -1,26 +1,133 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useCurrency } from '@/lib/currency'
-import type { WeeklyData } from '@/lib/types'
+import type { Expense } from '@/lib/types'
+
+type Period = 'Day' | 'Week' | 'Month' | 'Year'
+const PERIODS: Period[] = ['Day', 'Week', 'Month', 'Year']
+
+interface ChartPoint {
+  label: string
+  date: string
+  amount: number
+}
 
 interface Props {
-  data: WeeklyData[]
+  /** Raw expenses for live filtering */
+  expenses: Expense[]
 }
 
 const HEIGHT = 130
 const PADDING = { top: 20, bottom: 28, left: 8, right: 8 }
 
-export function WeeklyChart({ data }: Props) {
+function buildPoints(expenses: Expense[], period: Period): ChartPoint[] {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  if (period === 'Day') {
+    // 24 hours broken into 6 blocks of 4h
+    const points: ChartPoint[] = []
+    for (let h = 0; h < 24; h += 4) {
+      const label = `${String(h).padStart(2, '0')}:00`
+      const amount = expenses
+        .filter(e => {
+          const d = new Date(e.date)
+          const sameDay =
+            d.getFullYear() === today.getFullYear() &&
+            d.getMonth() === today.getMonth() &&
+            d.getDate() === today.getDate()
+          return sameDay && d.getHours() >= h && d.getHours() < h + 4
+        })
+        .reduce((s, e) => s + Number(e.amount), 0)
+      const iso = `${today.toISOString().split('T')[0]}T${String(h).padStart(2,'0')}:00`
+      points.push({ label, date: iso, amount })
+    }
+    return points
+  }
+
+  if (period === 'Week') {
+    // current week Mon–Sun (7 days)
+    const dow = today.getDay()
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - ((dow + 6) % 7))
+    const points: ChartPoint[] = []
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
+      const iso = d.toISOString().split('T')[0]
+      const amount = expenses
+        .filter(e => e.date === iso)
+        .reduce((s, e) => s + Number(e.amount), 0)
+      points.push({ label: dayLabels[d.getDay()], date: iso, amount })
+    }
+    return points
+  }
+
+  if (period === 'Month') {
+    // last 4 weeks (28 days) shown as 4 weekly buckets
+    const points: ChartPoint[] = []
+    for (let w = 3; w >= 0; w--) {
+      const weekStart = new Date(today)
+      weekStart.setDate(today.getDate() - w * 7 - 6)
+      const weekEnd = new Date(today)
+      weekEnd.setDate(today.getDate() - w * 7)
+      const isoStart = weekStart.toISOString().split('T')[0]
+      const isoEnd = weekEnd.toISOString().split('T')[0]
+      const amount = expenses
+        .filter(e => e.date >= isoStart && e.date <= isoEnd)
+        .reduce((s, e) => s + Number(e.amount), 0)
+      const label = `W${4 - w}`
+      points.push({ label, date: isoStart, amount })
+    }
+    return points
+  }
+
+  // Year — 12 months
+  const points: ChartPoint[] = []
+  for (let m = 0; m < 12; m++) {
+    const amount = expenses
+      .filter(e => {
+        const d = new Date(e.date)
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === m
+      })
+      .reduce((s, e) => s + Number(e.amount), 0)
+    points.push({
+      label: monthLabels[m],
+      date: `${now.getFullYear()}-${String(m + 1).padStart(2, '0')}-01`,
+      amount,
+    })
+  }
+  return points
+}
+
+export function WeeklyChart({ expenses }: Props) {
   const { format } = useCurrency()
-  const [selected, setSelected] = useState<number>(3) // wed default
+  const [activePeriod, setActivePeriod] = useState<Period>('Week')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  if (data.length === 0) return null
+  const data = useMemo(() => buildPoints(expenses, activePeriod), [expenses, activePeriod])
 
-  const max = Math.max(...data.map(d => d.amount)) * 1.15
-  const min = 0
-  const innerH = HEIGHT - PADDING.top - PADDING.bottom
+  const defaultSelected = useMemo(() => {
+    if (activePeriod === 'Week') {
+      const today = new Date()
+      const dow = today.getDay()
+      return (dow + 6) % 7 // Mon=0
+    }
+    if (activePeriod === 'Day') return 0
+    if (activePeriod === 'Month') return 3
+    return new Date().getMonth()
+  }, [activePeriod])
+
+  const [selected, setSelected] = useState<number>(defaultSelected)
+
+  useEffect(() => {
+    setSelected(defaultSelected)
+  }, [activePeriod, defaultSelected])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(320)
@@ -34,6 +141,12 @@ export function WeeklyChart({ data }: Props) {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+
+  if (data.length === 0) return null
+
+  const max = Math.max(...data.map(d => d.amount)) * 1.15 || 1
+  const min = 0
+  const innerH = HEIGHT - PADDING.top - PADDING.bottom
   const innerW = width - PADDING.left - PADDING.right
   const stepX = data.length > 1 ? innerW / (data.length - 1) : 0
 
@@ -41,11 +154,10 @@ export function WeeklyChart({ data }: Props) {
     x: PADDING.left + i * stepX,
     y: PADDING.top + innerH - ((d.amount - min) / (max - min)) * innerH,
     val: d.amount,
-    day: d.day,
+    label: d.label,
     date: d.date,
   }))
 
-  // Smooth cubic Bezier path
   const path = points.reduce((acc, p, i, arr) => {
     if (i === 0) return `M ${p.x} ${p.y}`
     const prev = arr[i - 1]
@@ -57,8 +169,15 @@ export function WeeklyChart({ data }: Props) {
   }, '')
 
   const areaPath = `${path} L ${points[points.length - 1].x} ${PADDING.top + innerH} L ${points[0].x} ${PADDING.top + innerH} Z`
-  const sel = points[selected] ?? points[0]
-  const formattedDate = new Date(sel.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+  const safeSelected = Math.min(selected, points.length - 1)
+  const sel = points[safeSelected] ?? points[0]
+  const formattedDate = (() => {
+    try {
+      return new Date(sel.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+    } catch {
+      return sel.date
+    }
+  })()
 
   return (
     <div
@@ -74,26 +193,78 @@ export function WeeklyChart({ data }: Props) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <p style={{ fontWeight: 700, fontSize: 16, color: '#1A1410' }}>Analytics</p>
-        <button
-          type="button"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            background: 'rgba(0,0,0,0.04)',
-            border: 'none',
-            borderRadius: 999,
-            padding: '5px 12px',
-            fontSize: 11,
-            color: '#1A1410',
-            fontFamily: 'inherit',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
-          Daily
-          <ChevronDown size={12} color="#1A1410" />
-        </button>
+
+        {/* Period picker */}
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setDropdownOpen(o => !o)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              background: 'rgba(0,0,0,0.04)',
+              border: 'none',
+              borderRadius: 999,
+              padding: '5px 12px',
+              fontSize: 11,
+              color: '#1A1410',
+              fontFamily: 'inherit',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            {activePeriod}
+            <ChevronDown
+              size={12}
+              color="#1A1410"
+              style={{
+                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            />
+          </button>
+
+          {dropdownOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                right: 0,
+                background: '#fff',
+                border: '1px solid rgba(0,0,0,0.09)',
+                borderRadius: 14,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                overflow: 'hidden',
+                zIndex: 50,
+                minWidth: 100,
+              }}
+            >
+              {PERIODS.map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => { setActivePeriod(p); setDropdownOpen(false) }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '9px 16px',
+                    textAlign: 'left',
+                    fontSize: 13,
+                    fontWeight: p === activePeriod ? 700 : 500,
+                    color: p === activePeriod ? '#D07850' : '#1A1410',
+                    background: p === activePeriod ? '#FBF6F0' : 'transparent',
+                    border: 'none',
+                    fontFamily: 'inherit',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Highlighted amount */}
@@ -111,7 +282,7 @@ export function WeeklyChart({ data }: Props) {
         ref={containerRef}
         style={{ position: 'relative', width: '100%', height: HEIGHT }}
       >
-        <svg width={width} height={HEIGHT} style={{ display: 'block', overflow: 'visible' }}>
+        <svg key={activePeriod} width={width} height={HEIGHT} style={{ display: 'block', overflow: 'visible' }}>
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#D07850" stopOpacity="0.22" />
@@ -181,11 +352,11 @@ export function WeeklyChart({ data }: Props) {
               y={HEIGHT - 6}
               textAnchor="middle"
               fontSize="10"
-              fill={i === selected ? '#D07850' : '#A8998A'}
-              fontWeight={i === selected ? 700 : 400}
+              fill={i === safeSelected ? '#D07850' : '#A8998A'}
+              fontWeight={i === safeSelected ? 700 : 400}
               fontFamily="var(--font-urbanist), sans-serif"
             >
-              {p.day}
+              {p.label}
             </text>
           ))}
         </svg>

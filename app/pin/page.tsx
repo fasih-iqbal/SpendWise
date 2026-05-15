@@ -107,18 +107,18 @@ function PinScreen() {
             width: 76, height: 76, borderRadius: 22,
             background: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.10)',
             overflow: 'hidden',
             position: 'relative',
           }}
         >
           <Image
-            src="/icons/logo.png"
+            src="/icons/logo-192.png"
             alt="SpendWise"
-            width={64}
-            height={64}
+            width={76}
+            height={76}
             priority
-            style={{ objectFit: 'contain' }}
+            style={{ objectFit: 'cover', borderRadius: 22 }}
           />
         </div>
 
