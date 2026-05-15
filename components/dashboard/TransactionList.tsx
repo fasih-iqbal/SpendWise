@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCurrency } from '@/lib/currency'
 import type { Expense, Category } from '@/lib/types'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { SkeletonCard } from '@/components/ui/SkeletonCard'
 
 interface Props {
   expenses: Expense[]
@@ -12,6 +12,8 @@ interface Props {
   onViewAll?: () => void
   onAddExpense?: () => void
   variant?: 'card' | 'plain'
+  /** Pass true while data is still fetching to suppress the empty state */
+  loading?: boolean
 }
 
 export function TransactionList({
@@ -22,18 +24,53 @@ export function TransactionList({
   onViewAll,
   onAddExpense,
   variant = 'card',
+  loading = false,
 }: Props) {
   const { format } = useCurrency()
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
 
+  // While loading, show a neutral skeleton — no empty-state flash
+  if (loading) {
+    return <SkeletonCard height={200} />
+  }
+
   if (expenses.length === 0) {
     return (
-      <EmptyState
-        icon="📊"
-        title="No expenses yet"
-        subtitle="Tap the + button below to add your first expense."
-        action={onAddExpense ? { label: 'Add Expense', onClick: onAddExpense } : undefined}
-      />
+      <div
+        style={{
+          margin: '0 20px 20px',
+          background: '#fff',
+          borderRadius: 22,
+          padding: '32px 20px',
+          textAlign: 'center',
+          border: '1px solid rgba(0,0,0,0.07)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        }}
+      >
+        <p style={{ fontWeight: 700, fontSize: 15, color: '#1A1410', marginBottom: 6 }}>No transactions yet</p>
+        <p style={{ fontSize: 13, color: '#A8998A' }}>Tap the + button to record your first expense.</p>
+        {onAddExpense && (
+          <button
+            type="button"
+            onClick={onAddExpense}
+            style={{
+              marginTop: 16,
+              padding: '10px 24px',
+              background: '#D07850',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 999,
+              fontFamily: 'inherit',
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(208,120,80,0.28)',
+            }}
+          >
+            Add Expense
+          </button>
+        )}
+      </div>
     )
   }
 

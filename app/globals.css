@@ -20,15 +20,47 @@
 }
 
 @layer base {
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-font-smoothing: antialiased; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* Prevent tap highlight flash on iOS */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent iOS from auto-zooming inputs */
+    -webkit-text-size-adjust: 100%;
+    /* Fill the full viewport including notch area */
+    height: -webkit-fill-available;
+  }
+
   body {
     background-color: #EDE4D8;
     color: #1A1410;
     font-family: var(--font-urbanist), sans-serif;
+    /* iOS Safari: prevent bounce scroll on the body */
+    overscroll-behavior: none;
+    /* Smooth scrolling inertia on iOS */
+    -webkit-overflow-scrolling: touch;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
   }
-  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* Prevent iOS zoom on input focus (font-size < 16px triggers it) */
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes shimmer {
@@ -40,5 +72,6 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
 @keyframes blink { 50% { opacity: 0; } }
 .cursor-blink { animation: blink 1s step-end infinite; }

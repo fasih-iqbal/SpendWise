@@ -48,7 +48,8 @@ export default function TransactionsPage() {
         <TransactionList
           expenses={sorted}
           categories={categories}
-          title={expLoading ? "Loading…" : `${sorted.length} entries`}
+          loading={expLoading}
+          title={expLoading ? 'Loading…' : `${sorted.length} entries`}
           showViewAll={false}
         />
       </div>

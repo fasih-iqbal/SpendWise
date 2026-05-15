@@ -4,19 +4,24 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  // Enable in all environments so local testing works offline too
+  disable: false,
+  // Serve the app shell from cache when offline
+  fallbacks: {
+    document: '/',
+  },
   runtimeCaching: [
     {
-      // Cache navigation (HTML pages)
-      urlPattern: /^https:\/\/.+\/_next\/static\/.*/i,
+      // Next.js static chunks — always cache first
+      urlPattern: /^https?:\/\/.+\/_next\/static\/.*/i,
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-assets',
-        expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+        expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
       },
     },
     {
-      // Cache images
+      // Images
       urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
       handler: 'CacheFirst',
       options: {
@@ -25,7 +30,7 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      // Cache Google Fonts
+      // Google Fonts
       urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
       handler: 'CacheFirst',
       options: {
@@ -34,8 +39,8 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      // Network-first for all page navigations
-      urlPattern: /^https:\/\/.+\/(?:dashboard|transactions|analytics|profile|pin).*/i,
+      // Page navigations — network first, fall back to cache
+      urlPattern: /^https?:\/\/.+\/(?:dashboard|transactions|analytics|profile|pin).*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages',
@@ -44,7 +49,7 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      // Supabase API — network first with cache fallback
+      // Supabase API — network first, short cache fallback
       urlPattern: /^https:\/\/.+\.supabase\.co\/.*/i,
       handler: 'NetworkFirst',
       options: {

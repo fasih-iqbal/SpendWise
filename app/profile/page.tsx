@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Wallet, TrendingDown, PiggyBank, Tags, Plus } from 'lucide-react'
+import { LogOut, Wallet, TrendingDown, PiggyBank, Tags, Plus, KeyRound, ShieldOff } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { SettingsCard } from '@/components/profile/SettingsCard'
@@ -100,7 +100,7 @@ export default function ProfilePage() {
           title="Security"
           items={[
             {
-              icon: '🔒',
+              icon: <KeyRound size={18} color="#65574A" strokeWidth={2} />,
               label: 'Change PIN',
               onClick: () => {
                 if (!user) return
@@ -109,8 +109,8 @@ export default function ProfilePage() {
               },
             },
             {
-              icon: '🔐',
-              label: 'Lock now',
+              icon: <ShieldOff size={18} color="#D07850" strokeWidth={2} />,
+              label: 'Lock Now',
               onClick: () => {
                 if (!user) return
                 lockNow(user.id)

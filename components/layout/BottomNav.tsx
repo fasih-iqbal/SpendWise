@@ -20,19 +20,29 @@ export function BottomNav({ onAddExpense }: Props) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around"
       style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: 500,
+        zIndex: 50,
         background: '#fff',
         borderTop: '1px solid rgba(0,0,0,0.07)',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around',
         paddingTop: 10,
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 14px)',
-        minHeight: 86,
-        maxWidth: 500,
-        margin: '0 auto',
+        /* Safe area: home indicator on iPhone X+ */
+        paddingBottom: 'env(safe-area-inset-bottom, 14px)',
+        /* Minimum touch target height above the home bar */
+        minHeight: 'calc(64px + env(safe-area-inset-bottom, 0px))',
       }}
+      aria-label="Main navigation"
     >
       {NAV_ITEMS.slice(0, 2).map(item => (
         <NavItem key={item.href} {...item} active={pathname === item.href} />
@@ -84,10 +94,20 @@ function NavItem({
   return (
     <Link
       href={href}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 16px', minWidth: 56, textDecoration: 'none' }}
+      prefetch
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        padding: '6px 16px',
+        minWidth: 56,
+        textDecoration: 'none',
+        WebkitTapHighlightColor: 'transparent',
+      }}
     >
       <Icon
-        size={20}
+        size={22}
         color={active ? '#D07850' : '#A8998A'}
         strokeWidth={active ? 2.5 : 1.5}
       />
@@ -95,7 +115,8 @@ function NavItem({
         style={{
           fontSize: 10,
           color: active ? '#D07850' : '#A8998A',
-          fontWeight: active ? 600 : 400,
+          fontWeight: active ? 700 : 400,
+          letterSpacing: active ? '0.01em' : 0,
         }}
       >
         {label}
